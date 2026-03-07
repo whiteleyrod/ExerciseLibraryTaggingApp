@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg"
+     width="548" height="1040" viewBox="0 0 548 1040"
+     role="img" aria-label="Normalized muscle map front and back">
+  <defs>
+    <style>
+      .panel-bg { fill: #f8fafc; stroke: #cbd5e1; stroke-width: 1; }
+      .panel-title { font: 600 16px sans-serif; fill: #0f172a; }
+      .muscle-zone { fill: #e2e8f0; stroke: #94a3b8; stroke-width: 1; cursor: pointer; }
+      .zone-label { font: 12px sans-serif; fill: #0f172a; pointer-events: none; user-select: none; }
+    </style>
+  </defs>
+  <rect class="panel-bg" x="16" y="16" width="250" height="1008" rx="10"/>
+  <rect class="panel-bg" x="282" y="16" width="250" height="1008" rx="10"/>
+  <text class="panel-title" x="26" y="40">Front View</text>
+  <text class="panel-title" x="292" y="40">Back View</text>
+  <rect id="muscle_abdominal_central" class="muscle-zone" x="26" y="64" width="230" height="26" rx="8"/>
+  <text class="zone-label" x="34" y="81">Abdominal - central</text>
+  <rect id="muscle_abdominal_lateral" class="muscle-zone" x="26" y="98" width="230" height="26" rx="8"/>
+  <text class="zone-label" x="34" y="115">Abdominal - lateral</text>
+  <rect id="muscle_adductors" class="muscle-zone" x="26" y="132" width="230" height="26" rx="8"/>
+  <text class="zone-label" x="34" y="149">Adductors</text>
+  <rect id="muscle_ankle_evertors" class="muscle-zone" x="26" y="166" width="230" height="26" rx="8"/>
+  <text class="zone-label" x="34" y="183">Ankle evertors</text>
+  <rect id="muscle_ankle_invertors" class="muscle-zone" x="26" y="200" width="230" height="26" rx="8"/>
+  <text class="zone-label" x="34" y="217">Ankle invertors</text>
+  <rect id="muscle_chest" class="muscle-zone" x="26" y="234" width="230" height="26" rx="8"/>
+  <text class="zone-label" x="34" y="251">Chest</text>
+  <rect id="muscle_finger_abductors" class="muscle-zone" x="26" y="268" width="230" height="26" rx="8"/>
+  <text class="zone-label" x="34" y="285">Finger abductors</text>
+  <rect id="muscle_finger_adductors" class="muscle-zone" x="26" y="302" width="230" height="26" rx="8"/>
+  <text class="zone-label" x="34" y="319">Finger adductors</text>
+  <rect id="muscle_finger_flexors" class="muscle-zone" x="26" y="336" width="230" height="26" rx="8"/>
+  <text class="zone-label" x="34" y="353">Finger flexors</text>
+  <rect id="muscle_foot_intrinsics" class="muscle-zone" x="26" y="370" width="230" height="26" rx="8"/>
+  <text class="zone-label" x="34" y="387">Foot intrinsics</text>
+  <rect id="muscle_forearm_anterior" class="muscle-zone" x="26" y="404" width="230" height="26" rx="8"/>
+  <text class="zone-label" x="34" y="421">Forearm anterior</text>
+  <rect id="muscle_forearm_pronators" class="muscle-zone" x="26" y="438" width="230" height="26" rx="8"/>
+  <text class="zone-label" x="34" y="455">Forearm pronators</text>
+  <rect id="muscle_forearm_supinators" class="muscle-zone" x="26" y="472" width="230" height="26" rx="8"/>
+  <text class="zone-label" x="34" y="489">Forearm supinators</text>
+  <rect id="muscle_hip_flexors" class="muscle-zone" x="26" y="506" width="230" height="26" rx="8"/>
+  <text class="zone-label" x="34" y="523">Hip flexors</text>
+  <rect id="muscle_hip_lateral_rotators" class="muscle-zone" x="26" y="540" width="230" height="26" rx="8"/>
+  <text class="zone-label" x="34" y="557">Hip lateral rotators</text>
+  <rect id="muscle_hip_medial_rotators" class="muscle-zone" x="26" y="574" width="230" height="26" rx="8"/>
+  <text class="zone-label" x="34" y="591">Hip medial rotators</text>
+  <rect id="muscle_neck_anterior" class="muscle-zone" x="26" y="608" width="230" height="26" rx="8"/>
+  <text class="zone-label" x="34" y="625">Neck anterior</text>
+  <rect id="muscle_neck_lateral" class="muscle-zone" x="26" y="642" width="230" height="26" rx="8"/>
+  <text class="zone-label" x="34" y="659">Neck lateral</text>
+  <rect id="muscle_quadriceps" class="muscle-zone" x="26" y="676" width="230" height="26" rx="8"/>
+  <text class="zone-label" x="34" y="693">Quadriceps</text>
+  <rect id="muscle_shoulder_anterior" class="muscle-zone" x="26" y="710" width="230" height="26" rx="8"/>
+  <text class="zone-label" x="34" y="727">Shoulder anterior</text>
+  <rect id="muscle_shoulder_lateral" class="muscle-zone" x="26" y="744" width="230" height="26" rx="8"/>
+  <text class="zone-label" x="34" y="761">Shoulder lateral</text>
+  <rect id="muscle_thumb_abductors" class="muscle-zone" x="26" y="778" width="230" height="26" rx="8"/>
+  <text class="zone-label" x="34" y="795">Thumb Abductors</text>
+  <rect id="muscle_thumb_adductors" class="muscle-zone" x="26" y="812" width="230" height="26" rx="8"/>
+  <text class="zone-label" x="34" y="829">Thumb adductors</text>
+  <rect id="muscle_thumb_flexors" class="muscle-zone" x="26" y="846" width="230" height="26" rx="8"/>
+  <text class="zone-label" x="34" y="863">Thumb flexors</text>
+  <rect id="muscle_upper_arm_anterior" class="muscle-zone" x="26" y="880" width="230" height="26" rx="8"/>
+  <text class="zone-label" x="34" y="897">Upper arm anterior</text>
+  <rect id="muscle_wrist_flexors" class="muscle-zone" x="26" y="914" width="230" height="26" rx="8"/>
+  <text class="zone-label" x="34" y="931">Wrist flexors</text>
+  <rect id="muscle_wrist_radial_deviators" class="muscle-zone" x="26" y="948" width="230" height="26" rx="8"/>
+  <text class="zone-label" x="34" y="965">Wrist radial deviators</text>
+  <rect id="muscle_wrist_ulnar_deviators" class="muscle-zone" x="26" y="982" width="230" height="26" rx="8"/>
+  <text class="zone-label" x="34" y="999">Wrist ulnar deviators</text>
+  <rect id="muscle_calf" class="muscle-zone" x="292" y="64" width="230" height="26" rx="8"/>
+  <text class="zone-label" x="300" y="81">Calf</text>
+  <rect id="muscle_finger_extensors" class="muscle-zone" x="292" y="98" width="230" height="26" rx="8"/>
+  <text class="zone-label" x="300" y="115">Finger extensors</text>
+  <rect id="muscle_foot_and_toe_extensors" class="muscle-zone" x="292" y="132" width="230" height="26" rx="8"/>
+  <text class="zone-label" x="300" y="149">Foot and toe extensors</text>
+  <rect id="muscle_forearm_posterior" class="muscle-zone" x="292" y="166" width="230" height="26" rx="8"/>
+  <text class="zone-label" x="300" y="183">Forearm posterior</text>
+  <rect id="muscle_gluteal_posterior" class="muscle-zone" x="292" y="200" width="230" height="26" rx="8"/>
+  <text class="zone-label" x="300" y="217">Gluteal - posterior</text>
+  <rect id="muscle_gluteals_lateral" class="muscle-zone" x="292" y="234" width="230" height="26" rx="8"/>
+  <text class="zone-label" x="300" y="251">Gluteals - lateral</text>
+  <rect id="muscle_hamstrings" class="muscle-zone" x="292" y="268" width="230" height="26" rx="8"/>
+  <text class="zone-label" x="300" y="285">Hamstrings</text>
+  <rect id="muscle_neck_posterior" class="muscle-zone" x="292" y="302" width="230" height="26" rx="8"/>
+  <text class="zone-label" x="300" y="319">Neck posterior</text>
+  <rect id="muscle_shoulder_posterior" class="muscle-zone" x="292" y="336" width="230" height="26" rx="8"/>
+  <text class="zone-label" x="300" y="353">Shoulder posterior</text>
+  <rect id="muscle_spinal_extensors_lower" class="muscle-zone" x="292" y="370" width="230" height="26" rx="8"/>
+  <text class="zone-label" x="300" y="387">Spinal extensors lower</text>
+  <rect id="muscle_spinal_extensors_middle" class="muscle-zone" x="292" y="404" width="230" height="26" rx="8"/>
+  <text class="zone-label" x="300" y="421">Spinal extensors middle</text>
+  <rect id="muscle_thumb_extensors" class="muscle-zone" x="292" y="438" width="230" height="26" rx="8"/>
+  <text class="zone-label" x="300" y="455">Thumb extensors</text>
+  <rect id="muscle_upper_arm_posterior" class="muscle-zone" x="292" y="472" width="230" height="26" rx="8"/>
+  <text class="zone-label" x="300" y="489">Upper arm posterior</text>
+  <rect id="muscle_wrist_extensors" class="muscle-zone" x="292" y="506" width="230" height="26" rx="8"/>
+  <text class="zone-label" x="300" y="523">Wrist extensors</text>
+</svg>

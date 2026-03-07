@@ -171,39 +171,44 @@
 
 .muscle-map {
   width: 100%;
-  max-width: 460px;
+  max-width: 560px;
   display: block;
   margin: 0 auto;
 }
 
-.body-outline {
-  fill: #e2e8f0;
-  stroke: #cbd5e1;
-  stroke-width: 1;
+.muscle-map svg {
+  width: 100%;
+  height: auto;
+  display: block;
 }
 
-.region-overlay {
-  fill: rgba(59, 130, 246, 0.12);
-  stroke: #3b82f6;
-  stroke-width: 1;
+.muscle-map .interactive-zone {
+  transition: fill 0.15s ease, stroke 0.15s ease;
   cursor: pointer;
 }
 
-.region-overlay.selected {
-  fill: rgba(30, 64, 175, 0.35);
+.muscle-map .interactive-zone:hover {
+  fill: rgba(96, 165, 250, 0.45);
+  stroke: #1d4ed8;
 }
 
-.region-overlay.disabled {
-  fill: rgba(148, 163, 184, 0.12);
-  stroke: #94a3b8;
-  cursor: not-allowed;
+.muscle-map .interactive-zone.selected {
+  fill: rgba(30, 64, 175, 0.55);
+  stroke: #1e3a8a;
 }
 
-.region-label {
-  font-size: 11px;
-  fill: #0f172a;
-  user-select: none;
-  pointer-events: none;
+.mapping-warning {
+  margin-top: 0.55rem;
+  margin-bottom: 0.75rem;
+  border: 1px solid #f59e0b;
+  background: #fffbeb;
+  border-radius: 8px;
+  padding: 0.55rem 0.65rem;
+  color: #78350f;
+}
+
+.mapping-warning p {
+  margin: 0.3rem 0 0;
 }
 
 .helper-text {

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState, type MouseEvent } from 'react'
 import Papa, { type ParseResult } from 'papaparse'
 import './App.css'
 
@@ -32,14 +32,15 @@ type TagState = {
 type PasteMode = 'Replace' | 'Merge'
 type FieldMode = 'Global' | PasteMode
 
-type MuscleRegion = {
+type MuscleMapEntry = {
   id: string
-  label: string
-  x: number
-  y: number
-  width: number
-  height: number
-  matchTerms: string[]
+  tag: string
+  view: 'front' | 'back'
+}
+
+type MuscleMapPayload = {
+  version: number
+  entries: MuscleMapEntry[]
 }
 
 const JOINT_ROWS: JointRow[] = [
@@ -68,73 +69,6 @@ const ALIAS_MAP: Record<string, string> = {
 }
 
 const STORAGE_KEY = 'exercise-tagging-app-tags-v1'
-
-const MUSCLE_REGIONS: MuscleRegion[] = [
-  { id: 'neck', label: 'Neck', x: 145, y: 30, width: 70, height: 35, matchTerms: ['neck', 'cervical'] },
-  {
-    id: 'shoulder-chest',
-    label: 'Shoulder/Chest',
-    x: 110,
-    y: 70,
-    width: 140,
-    height: 55,
-    matchTerms: ['shoulder', 'chest', 'deltoid', 'pectoral', 'subclavius', 'scap'],
-  },
-  {
-    id: 'upper-arm',
-    label: 'Upper Arm',
-    x: 95,
-    y: 130,
-    width: 170,
-    height: 45,
-    matchTerms: ['upper arm', 'biceps', 'triceps', 'brachialis', 'anconeus'],
-  },
-  {
-    id: 'forearm-hand',
-    label: 'Forearm/Hand',
-    x: 80,
-    y: 180,
-    width: 200,
-    height: 55,
-    matchTerms: ['forearm', 'wrist', 'thumb', 'finger', 'hand', 'metacarp'],
-  },
-  {
-    id: 'abdominal-spinal',
-    label: 'Abdominal/Spinal',
-    x: 120,
-    y: 130,
-    width: 120,
-    height: 105,
-    matchTerms: ['abdominal', 'oblique', 'lumbar', 'thoracic', 'spinal', 'multifidus', 'quadratus', 'transversus'],
-  },
-  {
-    id: 'gluteal-hip',
-    label: 'Gluteal/Hip',
-    x: 120,
-    y: 240,
-    width: 120,
-    height: 45,
-    matchTerms: ['glute', 'hip', 'psoas', 'iliacus', 'piriformis', 'obturator', 'gemellus', 'tensor fasciae latae'],
-  },
-  {
-    id: 'thigh',
-    label: 'Thigh',
-    x: 115,
-    y: 290,
-    width: 130,
-    height: 85,
-    matchTerms: ['thigh', 'quadriceps', 'hamstring', 'adductor', 'gracilis', 'vastus', 'rectus femoris', 'biceps femoris'],
-  },
-  {
-    id: 'lower-leg-foot',
-    label: 'Lower Leg/Foot',
-    x: 110,
-    y: 380,
-    width: 140,
-    height: 110,
-    matchTerms: ['calf', 'ankle', 'foot', 'toe', 'tibialis', 'peroneus', 'hallucis', 'digitorum', 'plantar', 'metatarsal'],
-  },
-]
 
 const createEmptyTags = (): TagState => ({
   muscleAreas: [],
@@ -167,16 +101,28 @@ const parseCsv = async <T extends Record<string, string>>(url: string): Promise<
   })
 }
 
+async function parseJson<T>(url: string): Promise<T> {
+  const response = await fetch(url)
+  if (!response.ok) {
+    throw new Error(`Failed to fetch ${url}`)
+  }
+  return (await response.json()) as T
+}
+
 const isLikelyVideoLink = (value: string): boolean => {
   const link = value.toLowerCase()
   return link.includes('.mp4') || link.includes('.mov') || link.includes('.m4v') || link.includes('.webm')
 }
 
 function App() {
+  const muscleMapRef = useRef<HTMLDivElement | null>(null)
+
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [exercises, setExercises] = useState<Exercise[]>([])
   const [muscleAreaOptions, setMuscleAreaOptions] = useState<string[]>([])
+  const [muscleMap, setMuscleMap] = useState<MuscleMapPayload>({ version: 1, entries: [] })
+  const [muscleSvgMarkup, setMuscleSvgMarkup] = useState('')
   const [tagsByExercise, setTagsByExercise] = useState<Record<string, TagState>>({})
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
@@ -193,9 +139,16 @@ function App() {
     const run = async () => {
       try {
         setLoading(true)
-        const [exerciseRows, taxonomyRows] = await Promise.all([
+        const [exerciseRows, taxonomyRows, muscleMapPayload, muscleSvg] = await Promise.all([
           parseCsv<{ ExerciseName?: string; Link?: string }>('/ExerciseName_Link.csv'),
           parseCsv<{ 'Muscle area'?: string }>('/TaggingCategories.csv'),
+          parseJson<MuscleMapPayload>('/muscle_map.json'),
+          fetch('/muscle_map.svg').then(async (response) => {
+            if (!response.ok) {
+              throw new Error('Failed to load muscle_map.svg')
+            }
+            return response.text()
+          }),
         ])
 
         const parsedExercises: Exercise[] = exerciseRows
@@ -217,6 +170,8 @@ function App() {
 
         setExercises(parsedExercises)
         setMuscleAreaOptions(uniqueSorted(areas))
+        setMuscleMap(muscleMapPayload)
+        setMuscleSvgMarkup(muscleSvg)
 
         if (parsedExercises.length > 0) {
           setSelectedIds(new Set([parsedExercises[0].id]))
@@ -258,17 +213,23 @@ function App() {
     return tagsByExercise[activeExercise.id] ?? createEmptyTags()
   }, [activeExercise, tagsByExercise])
 
-  const regionOptionMap = useMemo(() => {
-    const map: Record<string, string[]> = {}
-    MUSCLE_REGIONS.forEach((region) => {
-      const matches = muscleAreaOptions.filter((option) => {
-        const normalized = option.toLowerCase()
-        return region.matchTerms.some((term) => normalized.includes(term))
-      })
-      map[region.id] = uniqueSorted(matches)
+  const idToTagMap = useMemo(() => {
+    const map: Record<string, string> = {}
+    muscleMap.entries.forEach((entry) => {
+      map[entry.id] = entry.tag
     })
     return map
-  }, [muscleAreaOptions])
+  }, [muscleMap.entries])
+
+  const missingFromMap = useMemo(() => {
+    const mappedTags = new Set(muscleMap.entries.map((entry) => entry.tag))
+    return muscleAreaOptions.filter((option) => !mappedTags.has(option))
+  }, [muscleMap.entries, muscleAreaOptions])
+
+  const mapOnlyTags = useMemo(() => {
+    const taxonomyTags = new Set(muscleAreaOptions)
+    return uniqueSorted(muscleMap.entries.map((entry) => entry.tag).filter((tag) => !taxonomyTags.has(tag)))
+  }, [muscleMap.entries, muscleAreaOptions])
 
   useEffect(() => {
     setPreviewLoadError(false)
@@ -313,23 +274,49 @@ function App() {
     })
   }
 
-  const toggleMuscleRegion = (regionId: string) => {
-    const mappedAreas = regionOptionMap[regionId] ?? []
-    if (mappedAreas.length === 0) {
+  const toggleMuscleMapById = (muscleMapId: string) => {
+    const mappedTag = idToTagMap[muscleMapId]
+    if (!mappedTag) {
+      return
+    }
+    toggleMuscleArea(mappedTag)
+  }
+
+  const handleMuscleMapClick = (event: MouseEvent<HTMLDivElement>) => {
+    const target = event.target as Element | null
+    if (!target) {
       return
     }
 
-    updateActiveTags((current) => {
-      const allSelected = mappedAreas.every((area) => current.muscleAreas.includes(area))
-      const next = allSelected
-        ? current.muscleAreas.filter((area) => !mappedAreas.includes(area))
-        : [...current.muscleAreas, ...mappedAreas]
-      return {
-        ...current,
-        muscleAreas: uniqueSorted(next),
-      }
-    })
+    const muscleElement = target.closest('[id]') as Element | null
+    if (!muscleElement) {
+      return
+    }
+
+    const id = muscleElement.getAttribute('id')
+    if (!id) {
+      return
+    }
+
+    toggleMuscleMapById(id)
   }
+
+  useEffect(() => {
+    if (!muscleMapRef.current || muscleMap.entries.length === 0) {
+      return
+    }
+
+    muscleMap.entries.forEach((entry) => {
+      const node = muscleMapRef.current?.querySelector(`#${entry.id}`)
+      if (!node) {
+        return
+      }
+
+      const selected = activeTags.muscleAreas.includes(entry.tag)
+      node.classList.toggle('selected', selected)
+      node.classList.add('interactive-zone')
+    })
+  }, [activeTags.muscleAreas, muscleMap.entries, muscleSvgMarkup])
 
   const togglePlane = (row: JointRow, plane: Plane) => {
     updateActiveTags((current) => {
@@ -581,44 +568,26 @@ function App() {
               <div className="field-group">
                 <h3>Muscle Area</h3>
 
-                <div className="muscle-map-shell" role="img" aria-label="Clickable muscle area map">
-                  <svg viewBox="0 0 360 520" className="muscle-map">
-                    <ellipse cx="180" cy="22" rx="24" ry="20" className="body-outline" />
-                    <rect x="162" y="45" width="36" height="25" rx="8" className="body-outline" />
-                    <rect x="130" y="70" width="100" height="70" rx="24" className="body-outline" />
-                    <rect x="145" y="140" width="70" height="120" rx="20" className="body-outline" />
-                    <rect x="95" y="95" width="30" height="155" rx="15" className="body-outline" />
-                    <rect x="235" y="95" width="30" height="155" rx="15" className="body-outline" />
-                    <rect x="145" y="260" width="70" height="40" rx="16" className="body-outline" />
-                    <rect x="145" y="300" width="30" height="160" rx="15" className="body-outline" />
-                    <rect x="185" y="300" width="30" height="160" rx="15" className="body-outline" />
-
-                    {MUSCLE_REGIONS.map((region) => {
-                      const mappedAreas = regionOptionMap[region.id] ?? []
-                      const selectedCount = mappedAreas.filter((area) => activeTags.muscleAreas.includes(area)).length
-                      const isSelected = mappedAreas.length > 0 && selectedCount > 0
-                      const isDisabled = mappedAreas.length === 0
-                      return (
-                        <g key={region.id}>
-                          <rect
-                            x={region.x}
-                            y={region.y}
-                            width={region.width}
-                            height={region.height}
-                            rx={10}
-                            className={`region-overlay ${isSelected ? 'selected' : ''} ${isDisabled ? 'disabled' : ''}`}
-                            onClick={() => toggleMuscleRegion(region.id)}
-                          />
-                          <text x={region.x + 8} y={region.y + 22} className="region-label">
-                            {region.label}
-                          </text>
-                        </g>
-                      )
-                    })}
-                  </svg>
+                <div className="muscle-map-shell">
+                  <div
+                    ref={muscleMapRef}
+                    className="muscle-map"
+                    onClick={handleMuscleMapClick}
+                    role="img"
+                    aria-label="Clickable muscle map"
+                    dangerouslySetInnerHTML={{ __html: muscleSvgMarkup }}
+                  />
                 </div>
 
-                <p className="helper-text">Click body regions to add/remove mapped muscle areas.</p>
+                <p className="helper-text">Click a muscle shape to toggle exactly one matching tag from TaggingCategories.</p>
+
+                {(missingFromMap.length > 0 || mapOnlyTags.length > 0) && (
+                  <div className="mapping-warning">
+                    <strong>Mapping check:</strong>
+                    {missingFromMap.length > 0 && <p>Missing SVG mapping for: {missingFromMap.join(', ')}</p>}
+                    {mapOnlyTags.length > 0 && <p>Mapped tags not in taxonomy: {mapOnlyTags.join(', ')}</p>}
+                  </div>
+                )}
 
                 <div className="chip-row">
                   {activeTags.muscleAreas.map((area) => (
