@@ -32,6 +32,16 @@ type TagState = {
 type PasteMode = 'Replace' | 'Merge'
 type FieldMode = 'Global' | PasteMode
 
+type MuscleRegion = {
+  id: string
+  label: string
+  x: number
+  y: number
+  width: number
+  height: number
+  matchTerms: string[]
+}
+
 const JOINT_ROWS: JointRow[] = [
   'Hip',
   'Knee',
@@ -58,6 +68,73 @@ const ALIAS_MAP: Record<string, string> = {
 }
 
 const STORAGE_KEY = 'exercise-tagging-app-tags-v1'
+
+const MUSCLE_REGIONS: MuscleRegion[] = [
+  { id: 'neck', label: 'Neck', x: 145, y: 30, width: 70, height: 35, matchTerms: ['neck', 'cervical'] },
+  {
+    id: 'shoulder-chest',
+    label: 'Shoulder/Chest',
+    x: 110,
+    y: 70,
+    width: 140,
+    height: 55,
+    matchTerms: ['shoulder', 'chest', 'deltoid', 'pectoral', 'subclavius', 'scap'],
+  },
+  {
+    id: 'upper-arm',
+    label: 'Upper Arm',
+    x: 95,
+    y: 130,
+    width: 170,
+    height: 45,
+    matchTerms: ['upper arm', 'biceps', 'triceps', 'brachialis', 'anconeus'],
+  },
+  {
+    id: 'forearm-hand',
+    label: 'Forearm/Hand',
+    x: 80,
+    y: 180,
+    width: 200,
+    height: 55,
+    matchTerms: ['forearm', 'wrist', 'thumb', 'finger', 'hand', 'metacarp'],
+  },
+  {
+    id: 'abdominal-spinal',
+    label: 'Abdominal/Spinal',
+    x: 120,
+    y: 130,
+    width: 120,
+    height: 105,
+    matchTerms: ['abdominal', 'oblique', 'lumbar', 'thoracic', 'spinal', 'multifidus', 'quadratus', 'transversus'],
+  },
+  {
+    id: 'gluteal-hip',
+    label: 'Gluteal/Hip',
+    x: 120,
+    y: 240,
+    width: 120,
+    height: 45,
+    matchTerms: ['glute', 'hip', 'psoas', 'iliacus', 'piriformis', 'obturator', 'gemellus', 'tensor fasciae latae'],
+  },
+  {
+    id: 'thigh',
+    label: 'Thigh',
+    x: 115,
+    y: 290,
+    width: 130,
+    height: 85,
+    matchTerms: ['thigh', 'quadriceps', 'hamstring', 'adductor', 'gracilis', 'vastus', 'rectus femoris', 'biceps femoris'],
+  },
+  {
+    id: 'lower-leg-foot',
+    label: 'Lower Leg/Foot',
+    x: 110,
+    y: 380,
+    width: 140,
+    height: 110,
+    matchTerms: ['calf', 'ankle', 'foot', 'toe', 'tibialis', 'peroneus', 'hallucis', 'digitorum', 'plantar', 'metatarsal'],
+  },
+]
 
 const createEmptyTags = (): TagState => ({
   muscleAreas: [],
@@ -90,6 +167,11 @@ const parseCsv = async <T extends Record<string, string>>(url: string): Promise<
   })
 }
 
+const isLikelyVideoLink = (value: string): boolean => {
+  const link = value.toLowerCase()
+  return link.includes('.mp4') || link.includes('.mov') || link.includes('.m4v') || link.includes('.webm')
+}
+
 function App() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -97,8 +179,8 @@ function App() {
   const [muscleAreaOptions, setMuscleAreaOptions] = useState<string[]>([])
   const [tagsByExercise, setTagsByExercise] = useState<Record<string, TagState>>({})
   const [searchQuery, setSearchQuery] = useState('')
-  const [muscleSearch, setMuscleSearch] = useState('')
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+  const [previewLoadError, setPreviewLoadError] = useState(false)
   const [copiedTags, setCopiedTags] = useState<TagState | null>(null)
   const [copiedFrom, setCopiedFrom] = useState<string | null>(null)
   const [globalPasteMode, setGlobalPasteMode] = useState<PasteMode>('Merge')
@@ -176,13 +258,21 @@ function App() {
     return tagsByExercise[activeExercise.id] ?? createEmptyTags()
   }, [activeExercise, tagsByExercise])
 
-  const filteredMuscleOptions = useMemo(() => {
-    const query = muscleSearch.trim().toLowerCase()
-    if (!query) {
-      return muscleAreaOptions
-    }
-    return muscleAreaOptions.filter((option) => option.toLowerCase().includes(query))
-  }, [muscleAreaOptions, muscleSearch])
+  const regionOptionMap = useMemo(() => {
+    const map: Record<string, string[]> = {}
+    MUSCLE_REGIONS.forEach((region) => {
+      const matches = muscleAreaOptions.filter((option) => {
+        const normalized = option.toLowerCase()
+        return region.matchTerms.some((term) => normalized.includes(term))
+      })
+      map[region.id] = uniqueSorted(matches)
+    })
+    return map
+  }, [muscleAreaOptions])
+
+  useEffect(() => {
+    setPreviewLoadError(false)
+  }, [activeExercise?.id])
 
   const updateActiveTags = (updater: (current: TagState) => TagState) => {
     if (!activeExercise) {
@@ -216,6 +306,24 @@ function App() {
       const next = exists
         ? current.muscleAreas.filter((item) => item !== value)
         : [...current.muscleAreas, value]
+      return {
+        ...current,
+        muscleAreas: uniqueSorted(next),
+      }
+    })
+  }
+
+  const toggleMuscleRegion = (regionId: string) => {
+    const mappedAreas = regionOptionMap[regionId] ?? []
+    if (mappedAreas.length === 0) {
+      return
+    }
+
+    updateActiveTags((current) => {
+      const allSelected = mappedAreas.every((area) => current.muscleAreas.includes(area))
+      const next = allSelected
+        ? current.muscleAreas.filter((area) => !mappedAreas.includes(area))
+        : [...current.muscleAreas, ...mappedAreas]
       return {
         ...current,
         muscleAreas: uniqueSorted(next),
@@ -347,6 +455,32 @@ function App() {
       <div className="layout">
         <section className="panel">
           <h2>Exercise Library</h2>
+
+          {activeExercise && (
+            <div className="preview-card">
+              <div className="preview-title">Preview: {activeExercise.name}</div>
+              <div className="preview-media">
+                {activeExercise.link && !previewLoadError && isLikelyVideoLink(activeExercise.link) ? (
+                  <video
+                    controls
+                    preload="metadata"
+                    src={activeExercise.link}
+                    onError={() => setPreviewLoadError(true)}
+                  />
+                ) : (
+                  <div className="preview-fallback">
+                    {previewLoadError ? 'Preview unavailable for this link.' : 'No embeddable preview available.'}
+                  </div>
+                )}
+              </div>
+              {activeExercise.link && (
+                <a href={activeExercise.link} target="_blank" rel="noreferrer">
+                  Open exercise link
+                </a>
+              )}
+            </div>
+          )}
+
           <input
             className="search"
             value={searchQuery}
@@ -446,12 +580,45 @@ function App() {
 
               <div className="field-group">
                 <h3>Muscle Area</h3>
-                <input
-                  className="search"
-                  value={muscleSearch}
-                  onChange={(event) => setMuscleSearch(event.target.value)}
-                  placeholder="Filter muscle area..."
-                />
+
+                <div className="muscle-map-shell" role="img" aria-label="Clickable muscle area map">
+                  <svg viewBox="0 0 360 520" className="muscle-map">
+                    <ellipse cx="180" cy="22" rx="24" ry="20" className="body-outline" />
+                    <rect x="162" y="45" width="36" height="25" rx="8" className="body-outline" />
+                    <rect x="130" y="70" width="100" height="70" rx="24" className="body-outline" />
+                    <rect x="145" y="140" width="70" height="120" rx="20" className="body-outline" />
+                    <rect x="95" y="95" width="30" height="155" rx="15" className="body-outline" />
+                    <rect x="235" y="95" width="30" height="155" rx="15" className="body-outline" />
+                    <rect x="145" y="260" width="70" height="40" rx="16" className="body-outline" />
+                    <rect x="145" y="300" width="30" height="160" rx="15" className="body-outline" />
+                    <rect x="185" y="300" width="30" height="160" rx="15" className="body-outline" />
+
+                    {MUSCLE_REGIONS.map((region) => {
+                      const mappedAreas = regionOptionMap[region.id] ?? []
+                      const selectedCount = mappedAreas.filter((area) => activeTags.muscleAreas.includes(area)).length
+                      const isSelected = mappedAreas.length > 0 && selectedCount > 0
+                      const isDisabled = mappedAreas.length === 0
+                      return (
+                        <g key={region.id}>
+                          <rect
+                            x={region.x}
+                            y={region.y}
+                            width={region.width}
+                            height={region.height}
+                            rx={10}
+                            className={`region-overlay ${isSelected ? 'selected' : ''} ${isDisabled ? 'disabled' : ''}`}
+                            onClick={() => toggleMuscleRegion(region.id)}
+                          />
+                          <text x={region.x + 8} y={region.y + 22} className="region-label">
+                            {region.label}
+                          </text>
+                        </g>
+                      )
+                    })}
+                  </svg>
+                </div>
+
+                <p className="helper-text">Click body regions to add/remove mapped muscle areas.</p>
 
                 <div className="chip-row">
                   {activeTags.muscleAreas.map((area) => (
@@ -461,8 +628,10 @@ function App() {
                   ))}
                 </div>
 
-                <div className="option-grid">
-                  {filteredMuscleOptions.map((option) => (
+                <details>
+                  <summary>Manual fine-tune muscle areas</summary>
+                  <div className="option-grid">
+                    {muscleAreaOptions.map((option) => (
                     <label key={option} className="option-item">
                       <input
                         type="checkbox"
@@ -471,8 +640,9 @@ function App() {
                       />
                       {option}
                     </label>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                </details>
               </div>
 
               <div className="field-group">
