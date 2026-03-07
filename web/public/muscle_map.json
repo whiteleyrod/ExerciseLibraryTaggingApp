@@ -1,0 +1,212 @@
+[
+  {
+    "id": "neck_anterior",
+    "muscle_area": "Neck anterior",
+    "body_region": "Unknown"
+  },
+  {
+    "id": "neck_lateral",
+    "muscle_area": "Neck lateral",
+    "body_region": "Unknown"
+  },
+  {
+    "id": "neck_posterior",
+    "muscle_area": "Neck posterior",
+    "body_region": "Unknown"
+  },
+  {
+    "id": "shoulder_anterior",
+    "muscle_area": "Shoulder anterior",
+    "body_region": "Unknown"
+  },
+  {
+    "id": "shoulder_lateral",
+    "muscle_area": "Shoulder lateral",
+    "body_region": "Unknown"
+  },
+  {
+    "id": "shoulder_posterior",
+    "muscle_area": "Shoulder posterior",
+    "body_region": "Unknown"
+  },
+  {
+    "id": "chest",
+    "muscle_area": "Chest",
+    "body_region": "Unknown"
+  },
+  {
+    "id": "upper_arm_anterior",
+    "muscle_area": "Upper arm anterior",
+    "body_region": "Unknown"
+  },
+  {
+    "id": "upper_arm_posterior",
+    "muscle_area": "Upper arm posterior",
+    "body_region": "Unknown"
+  },
+  {
+    "id": "forearm_anterior",
+    "muscle_area": "Forearm anterior",
+    "body_region": "Unknown"
+  },
+  {
+    "id": "forearm_posterior",
+    "muscle_area": "Forearm posterior",
+    "body_region": "Unknown"
+  },
+  {
+    "id": "wrist_flexors",
+    "muscle_area": "Wrist flexors",
+    "body_region": "Unknown"
+  },
+  {
+    "id": "wrist_extensors",
+    "muscle_area": "Wrist extensors",
+    "body_region": "Unknown"
+  },
+  {
+    "id": "wrist_ulnar_deviators",
+    "muscle_area": "Wrist ulnar deviators",
+    "body_region": "Unknown"
+  },
+  {
+    "id": "wrist_radial_deviators",
+    "muscle_area": "Wrist radial deviators",
+    "body_region": "Unknown"
+  },
+  {
+    "id": "forearm_pronators",
+    "muscle_area": "Forearm pronators",
+    "body_region": "Unknown"
+  },
+  {
+    "id": "forearm_supinators",
+    "muscle_area": "Forearm supinators",
+    "body_region": "Unknown"
+  },
+  {
+    "id": "finger_flexors",
+    "muscle_area": "Finger flexors",
+    "body_region": "Unknown"
+  },
+  {
+    "id": "finger_extensors",
+    "muscle_area": "Finger extensors",
+    "body_region": "Unknown"
+  },
+  {
+    "id": "finger_abductors",
+    "muscle_area": "Finger abductors",
+    "body_region": "Unknown"
+  },
+  {
+    "id": "finger_adductors",
+    "muscle_area": "Finger adductors",
+    "body_region": "Unknown"
+  },
+  {
+    "id": "thumb_flexors",
+    "muscle_area": "Thumb flexors",
+    "body_region": "Unknown"
+  },
+  {
+    "id": "thumb_extensors",
+    "muscle_area": "Thumb extensors",
+    "body_region": "Unknown"
+  },
+  {
+    "id": "thumb_adductors",
+    "muscle_area": "Thumb adductors",
+    "body_region": "Unknown"
+  },
+  {
+    "id": "thumb_abductors",
+    "muscle_area": "Thumb Abductors",
+    "body_region": "Unknown"
+  },
+  {
+    "id": "abdominal___central",
+    "muscle_area": "Abdominal - central",
+    "body_region": "Unknown"
+  },
+  {
+    "id": "abdominal___lateral",
+    "muscle_area": "Abdominal - lateral",
+    "body_region": "Unknown"
+  },
+  {
+    "id": "spinal_extensors_middle",
+    "muscle_area": "Spinal extensors middle",
+    "body_region": "Unknown"
+  },
+  {
+    "id": "spinal_extensors_lower",
+    "muscle_area": "Spinal extensors lower",
+    "body_region": "Unknown"
+  },
+  {
+    "id": "gluteal___posterior",
+    "muscle_area": "Gluteal - posterior",
+    "body_region": "Unknown"
+  },
+  {
+    "id": "gluteals___lateral",
+    "muscle_area": "Gluteals - lateral",
+    "body_region": "Unknown"
+  },
+  {
+    "id": "hip_flexors",
+    "muscle_area": "Hip flexors",
+    "body_region": "Unknown"
+  },
+  {
+    "id": "hip_lateral_rotators",
+    "muscle_area": "Hip lateral rotators",
+    "body_region": "Unknown"
+  },
+  {
+    "id": "hip_medial_rotators",
+    "muscle_area": "Hip medial rotators",
+    "body_region": "Unknown"
+  },
+  {
+    "id": "adductors",
+    "muscle_area": "Adductors",
+    "body_region": "Unknown"
+  },
+  {
+    "id": "hamstrings",
+    "muscle_area": "Hamstrings",
+    "body_region": "Unknown"
+  },
+  {
+    "id": "quadriceps",
+    "muscle_area": "Quadriceps",
+    "body_region": "Unknown"
+  },
+  {
+    "id": "foot_and_toe_extensors",
+    "muscle_area": "Foot and toe extensors",
+    "body_region": "Unknown"
+  },
+  {
+    "id": "calf",
+    "muscle_area": "Calf",
+    "body_region": "Unknown"
+  },
+  {
+    "id": "foot_intrinsics",
+    "muscle_area": "Foot intrinsics",
+    "body_region": "Unknown"
+  },
+  {
+    "id": "ankle_evertors",
+    "muscle_area": "Ankle evertors",
+    "body_region": "Unknown"
+  },
+  {
+    "id": "ankle_invertors",
+    "muscle_area": "Ankle invertors",
+    "body_region": "Unknown"
+  }
+]
