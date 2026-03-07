@@ -1,0 +1,49 @@
+<?xml version='1.0' encoding='utf-8'?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000">
+  <g id="front_view" transform="translate(250, 0)">
+    <rect id="neck_anterior" x="0" y="0" width="100" height="30" fill="lightgray" stroke="black" data-muscle-area="Neck anterior" />
+    <rect id="neck_posterior" x="0" y="40" width="100" height="30" fill="lightgray" stroke="black" data-muscle-area="Neck posterior" />
+    <rect id="shoulder_lateral" x="0" y="80" width="100" height="30" fill="lightgray" stroke="black" data-muscle-area="Shoulder lateral" />
+    <rect id="chest" x="0" y="120" width="100" height="30" fill="lightgray" stroke="black" data-muscle-area="Chest" />
+    <rect id="upper_arm_posterior" x="0" y="160" width="100" height="30" fill="lightgray" stroke="black" data-muscle-area="Upper arm posterior" />
+    <rect id="forearm_posterior" x="0" y="200" width="100" height="30" fill="lightgray" stroke="black" data-muscle-area="Forearm posterior" />
+    <rect id="wrist_extensors" x="0" y="240" width="100" height="30" fill="lightgray" stroke="black" data-muscle-area="Wrist extensors" />
+    <rect id="wrist_radial_deviators" x="0" y="280" width="100" height="30" fill="lightgray" stroke="black" data-muscle-area="Wrist radial deviators" />
+    <rect id="forearm_supinators" x="0" y="320" width="100" height="30" fill="lightgray" stroke="black" data-muscle-area="Forearm supinators" />
+    <rect id="finger_extensors" x="0" y="360" width="100" height="30" fill="lightgray" stroke="black" data-muscle-area="Finger extensors" />
+    <rect id="finger_adductors" x="0" y="400" width="100" height="30" fill="lightgray" stroke="black" data-muscle-area="Finger adductors" />
+    <rect id="thumb_extensors" x="0" y="440" width="100" height="30" fill="lightgray" stroke="black" data-muscle-area="Thumb extensors" />
+    <rect id="thumb_abductors" x="0" y="480" width="100" height="30" fill="lightgray" stroke="black" data-muscle-area="Thumb Abductors" />
+    <rect id="abdominal___lateral" x="0" y="520" width="100" height="30" fill="lightgray" stroke="black" data-muscle-area="Abdominal - lateral" />
+    <rect id="spinal_extensors_lower" x="0" y="560" width="100" height="30" fill="lightgray" stroke="black" data-muscle-area="Spinal extensors lower" />
+    <rect id="gluteals___lateral" x="0" y="600" width="100" height="30" fill="lightgray" stroke="black" data-muscle-area="Gluteals - lateral" />
+    <rect id="hip_lateral_rotators" x="0" y="640" width="100" height="30" fill="lightgray" stroke="black" data-muscle-area="Hip lateral rotators" />
+    <rect id="adductors" x="0" y="680" width="100" height="30" fill="lightgray" stroke="black" data-muscle-area="Adductors" />
+    <rect id="quadriceps" x="0" y="720" width="100" height="30" fill="lightgray" stroke="black" data-muscle-area="Quadriceps" />
+    <rect id="calf" x="0" y="760" width="100" height="30" fill="lightgray" stroke="black" data-muscle-area="Calf" />
+    <rect id="ankle_evertors" x="0" y="800" width="100" height="30" fill="lightgray" stroke="black" data-muscle-area="Ankle evertors" />
+  </g>
+  <g id="back_view" transform="translate(750, 0)">
+    <rect id="neck_lateral" x="0" y="0" width="100" height="30" fill="lightgray" stroke="black" data-muscle-area="Neck lateral" />
+    <rect id="shoulder_anterior" x="0" y="40" width="100" height="30" fill="lightgray" stroke="black" data-muscle-area="Shoulder anterior" />
+    <rect id="shoulder_posterior" x="0" y="80" width="100" height="30" fill="lightgray" stroke="black" data-muscle-area="Shoulder posterior" />
+    <rect id="upper_arm_anterior" x="0" y="120" width="100" height="30" fill="lightgray" stroke="black" data-muscle-area="Upper arm anterior" />
+    <rect id="forearm_anterior" x="0" y="160" width="100" height="30" fill="lightgray" stroke="black" data-muscle-area="Forearm anterior" />
+    <rect id="wrist_flexors" x="0" y="200" width="100" height="30" fill="lightgray" stroke="black" data-muscle-area="Wrist flexors" />
+    <rect id="wrist_ulnar_deviators" x="0" y="240" width="100" height="30" fill="lightgray" stroke="black" data-muscle-area="Wrist ulnar deviators" />
+    <rect id="forearm_pronators" x="0" y="280" width="100" height="30" fill="lightgray" stroke="black" data-muscle-area="Forearm pronators" />
+    <rect id="finger_flexors" x="0" y="320" width="100" height="30" fill="lightgray" stroke="black" data-muscle-area="Finger flexors" />
+    <rect id="finger_abductors" x="0" y="360" width="100" height="30" fill="lightgray" stroke="black" data-muscle-area="Finger abductors" />
+    <rect id="thumb_flexors" x="0" y="400" width="100" height="30" fill="lightgray" stroke="black" data-muscle-area="Thumb flexors" />
+    <rect id="thumb_adductors" x="0" y="440" width="100" height="30" fill="lightgray" stroke="black" data-muscle-area="Thumb adductors" />
+    <rect id="abdominal___central" x="0" y="480" width="100" height="30" fill="lightgray" stroke="black" data-muscle-area="Abdominal - central" />
+    <rect id="spinal_extensors_middle" x="0" y="520" width="100" height="30" fill="lightgray" stroke="black" data-muscle-area="Spinal extensors middle" />
+    <rect id="gluteal___posterior" x="0" y="560" width="100" height="30" fill="lightgray" stroke="black" data-muscle-area="Gluteal - posterior" />
+    <rect id="hip_flexors" x="0" y="600" width="100" height="30" fill="lightgray" stroke="black" data-muscle-area="Hip flexors" />
+    <rect id="hip_medial_rotators" x="0" y="640" width="100" height="30" fill="lightgray" stroke="black" data-muscle-area="Hip medial rotators" />
+    <rect id="hamstrings" x="0" y="680" width="100" height="30" fill="lightgray" stroke="black" data-muscle-area="Hamstrings" />
+    <rect id="foot_and_toe_extensors" x="0" y="720" width="100" height="30" fill="lightgray" stroke="black" data-muscle-area="Foot and toe extensors" />
+    <rect id="foot_intrinsics" x="0" y="760" width="100" height="30" fill="lightgray" stroke="black" data-muscle-area="Foot intrinsics" />
+    <rect id="ankle_invertors" x="0" y="800" width="100" height="30" fill="lightgray" stroke="black" data-muscle-area="Ankle invertors" />
+  </g>
+</svg>
