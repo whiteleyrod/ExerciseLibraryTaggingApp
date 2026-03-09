@@ -8,6 +8,30 @@ type Exercise = {
   link: string
 }
 
+type TaxonomyRow = {
+  'Muscle area'?: string
+  'Muscles involved'?: string
+  'Joints involved'?: string
+}
+
+type PaneGroupRow = {
+  Group?: string
+  'Muscle Area Tag'?: string
+  'Muscles Involved'?: string
+  'Joints Involved'?: string
+}
+
+type EquipmentGroupRow = {
+  Category?: string
+  'Equipment Included'?: string
+}
+
+type TaggingCategoryRow = {
+  'Body position'?: string
+  Difficulty?: string
+  Level?: string
+}
+
 type Plane = 'Frontal' | 'Sagittal' | 'Transverse'
 type JointRow =
   | 'Hip'
@@ -26,6 +50,10 @@ type JointRow =
 
 type TagState = {
   muscleAreas: string[]
+  equipment: string[]
+  bodyPositions: string[]
+  difficulty: number | null
+  levels: string[]
   planes: Record<JointRow, Plane[]>
 }
 
@@ -41,6 +69,43 @@ type MuscleMapEntry = {
 type MuscleMapPayload = {
   version: number
   entries: MuscleMapEntry[]
+}
+
+type PaneId =
+  | 'exercise-library'
+  | 'exercise-list'
+  | 'session-controls'
+  | 'muscle-map'
+  | 'muscles-involved'
+  | 'equipment'
+  | 'body-position'
+  | 'difficulty'
+  | 'level'
+  | 'joints'
+  | 'planes-matrix'
+
+type DockSlot = PaneId | null
+
+type ResizeSession =
+  | {
+      type: 'column'
+      rowIndex: number
+      paneIndex: number
+      startClient: number
+      startSize: number
+    }
+  | {
+      type: 'row'
+      rowIndex: number
+      startClient: number
+      startSize: number
+    }
+
+type LayoutPreset = {
+  id: 'balanced' | 'map-focus' | 'library-focus'
+  label: string
+  rowHeights: number[]
+  rowWidths: number[][]
 }
 
 const JOINT_ROWS: JointRow[] = [
@@ -70,6 +135,51 @@ const ALIAS_MAP: Record<string, string> = {
 
 const STORAGE_KEY = 'exercise-tagging-app-tags-v1'
 
+const DOCK_ROW_SIZES = [2, 3, 4, 3]
+
+const MIN_ROW_SIZE = 0.12
+const MIN_COLUMN_SIZE = 0.15
+
+const DEFAULT_DOCK_ASSIGNMENTS: DockSlot[] = [
+  'exercise-library',
+  'exercise-list',
+  'session-controls',
+  'muscle-map',
+  'joints',
+  'muscles-involved',
+  'equipment',
+  'planes-matrix',
+  null,
+  'body-position',
+  'difficulty',
+  'level',
+]
+
+const DEFAULT_ROW_HEIGHTS = [0.22, 0.26, 0.26, 0.26]
+
+const DEFAULT_ROW_WIDTHS = DOCK_ROW_SIZES.map((columns) => Array.from({ length: columns }, () => 1 / columns))
+
+const LAYOUT_PRESETS: LayoutPreset[] = [
+  {
+    id: 'balanced',
+    label: 'Balanced',
+    rowHeights: [...DEFAULT_ROW_HEIGHTS],
+    rowWidths: DEFAULT_ROW_WIDTHS.map((row) => [...row]),
+  },
+  {
+    id: 'map-focus',
+    label: 'Map Focus',
+    rowHeights: [0.3, 0.3, 0.22, 0.18],
+    rowWidths: [[0.4, 0.6], [0.45, 0.25, 0.3], [0.2, 0.2, 0.2, 0.2], [0.34, 0.33, 0.33]],
+  },
+  {
+    id: 'library-focus',
+    label: 'Library Focus',
+    rowHeights: [0.3, 0.26, 0.24, 0.2],
+    rowWidths: [[0.65, 0.35], [0.34, 0.33, 0.33], [0.25, 0.25, 0.25, 0.25], [0.34, 0.33, 0.33]],
+  },
+]
+
 const JOINT_LABEL_TO_ROW: Record<string, JointRow> = {
   hip: 'Hip',
   knee: 'Knee',
@@ -89,11 +199,63 @@ const JOINT_LABEL_TO_ROW: Record<string, JointRow> = {
 
 const createEmptyTags = (): TagState => ({
   muscleAreas: [],
+  equipment: [],
+  bodyPositions: [],
+  difficulty: null,
+  levels: [],
   planes: JOINT_ROWS.reduce(
     (accumulator, row) => ({ ...accumulator, [row]: [] }),
     {} as Record<JointRow, Plane[]>,
   ),
 })
+
+type LegacyTagShape = Partial<TagState> & {
+  bodyPosition?: string | null
+  level?: string | null
+}
+
+const normalizeTagState = (value: LegacyTagShape | null | undefined): TagState => {
+  const normalizedPlanes = JOINT_ROWS.reduce(
+    (accumulator, row) => {
+      const rowPlanes = value?.planes?.[row] ?? []
+      const normalizedRow = rowPlanes
+        .map((plane) => normalizePlane(String(plane)))
+        .filter((plane): plane is Plane => plane !== null)
+
+      return {
+        ...accumulator,
+        [row]: uniqueSorted(normalizedRow) as Plane[],
+      }
+    },
+    {} as Record<JointRow, Plane[]>,
+  )
+
+  return {
+    muscleAreas: uniqueSorted(value?.muscleAreas ?? []),
+    equipment: uniqueSorted(value?.equipment ?? []),
+    bodyPositions: uniqueSorted(
+      Array.isArray(value?.bodyPositions)
+        ? value.bodyPositions.map((item) => String(item))
+        : value?.bodyPosition
+          ? [String(value.bodyPosition)]
+          : [],
+    ),
+    difficulty:
+      typeof value?.difficulty === 'number'
+        ? value.difficulty
+        : value?.difficulty !== null && value?.difficulty !== undefined && String(value.difficulty).trim().length > 0
+          ? Number(value.difficulty)
+          : null,
+    levels: uniqueSorted(
+      Array.isArray(value?.levels)
+        ? value.levels.map((item) => String(item))
+        : value?.level
+          ? [String(value.level)]
+          : [],
+    ),
+    planes: normalizedPlanes,
+  }
+}
 
 const normalizePlane = (value: string): Plane | null => {
   const normalized = ALIAS_MAP[value.trim().toLowerCase()]
@@ -105,12 +267,84 @@ const normalizePlane = (value: string): Plane | null => {
 
 const uniqueSorted = (values: string[]): string[] => [...new Set(values)].sort((a, b) => a.localeCompare(b))
 
+const clamp = (value: number, min: number, max: number): number => Math.min(max, Math.max(min, value))
+
 const normalizeLookupValue = (value: string): string =>
   value
     .trim()
     .toLowerCase()
     .replace(/[_-]+/g, ' ')
     .replace(/\s+/g, ' ')
+
+const splitCommaValues = (value: string): string[] =>
+  value
+    .split(',')
+    .map((item) => item.trim())
+    .filter((item) => item.length > 0)
+
+const formatPaneGroupTitle = (groupKey: string): string => {
+  if (groupKey === 'upperbody') {
+    return 'Upper body'
+  }
+  if (groupKey === 'trunk&core') {
+    return 'Trunk & core'
+  }
+  if (groupKey === 'lowerbody') {
+    return 'Lower body'
+  }
+  return groupKey
+    .replace(/[_&-]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .replace(/(^|\s)([a-z])/g, (_full, lead: string, letter: string) => `${lead}${letter.toUpperCase()}`)
+}
+
+const inferJointRowsFromText = (jointLabel: string): JointRow[] => {
+  const normalized = normalizeLookupValue(jointLabel)
+  const rows = new Set<JointRow>()
+
+  if (normalized.includes('cervical')) {
+    rows.add('Cervical')
+  }
+  if (normalized.includes('thoracic') || normalized.includes('intervertebral')) {
+    rows.add('Thoracic')
+  }
+  if (normalized.includes('lumbar') || normalized.includes('sacroiliac') || normalized.includes('pelvic tilt')) {
+    rows.add('Lumbar')
+  }
+  if (normalized.includes('shoulder') || normalized.includes('glenohumeral')) {
+    rows.add('Shoulder')
+  }
+  if (normalized.includes('elbow')) {
+    rows.add('Elbow')
+  }
+  if (normalized.includes('wrist') || normalized.includes('radiocarpal')) {
+    rows.add('Wrist')
+  }
+  if (normalized.includes('metacarpophalangeal') || normalized === 'mcp') {
+    rows.add('MCP')
+  }
+  if (normalized.includes('finger') || normalized.includes('interphalangeal')) {
+    rows.add('Fingers')
+  }
+  if (normalized.includes('hip')) {
+    rows.add('Hip')
+  }
+  if (normalized.includes('knee')) {
+    rows.add('Knee')
+  }
+  if (normalized.includes('ankle') || normalized.includes('talocrural') || normalized.includes('subtalar')) {
+    rows.add('Ankle')
+  }
+  if (normalized.includes('midfoot') || normalized.includes('tarso metatarsal') || normalized.includes('tarsometatarsal')) {
+    rows.add('Midfoot')
+  }
+  if (normalized.includes('toe')) {
+    rows.add('Toes')
+  }
+
+  return JOINT_ROWS.filter((row) => rows.has(row))
+}
 
 const formatSourceIdForTooltip = (value: string): string => {
   const cleaned = value
@@ -221,6 +455,8 @@ const isLikelyVideoLink = (value: string): boolean => {
 function App() {
   const muscleMapRef = useRef<HTMLDivElement | null>(null)
   const jointsMapRef = useRef<HTMLDivElement | null>(null)
+  const dockLayoutRef = useRef<HTMLDivElement | null>(null)
+  const dockRowRefs = useRef<Array<HTMLDivElement | null>>([])
 
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -231,6 +467,13 @@ function App() {
   const [backMuscleSvg, setBackMuscleSvg] = useState('')
   const [jointsSvg, setJointsSvg] = useState('')
   const [tagsByExercise, setTagsByExercise] = useState<Record<string, TagState>>({})
+  const [taxonomyRows, setTaxonomyRows] = useState<TaxonomyRow[]>([])
+  const [paneGroupRows, setPaneGroupRows] = useState<PaneGroupRow[]>([])
+  const [equipmentGroupRows, setEquipmentGroupRows] = useState<EquipmentGroupRow[]>([])
+  const [bodyPositionOptions, setBodyPositionOptions] = useState<string[]>([])
+  const [levelOptions, setLevelOptions] = useState<string[]>([])
+  const [difficultyMin, setDifficultyMin] = useState(0)
+  const [difficultyMax, setDifficultyMax] = useState(10)
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [previewLoadError, setPreviewLoadError] = useState(false)
@@ -238,8 +481,10 @@ function App() {
   const [copiedFrom, setCopiedFrom] = useState<string | null>(null)
   const [globalPasteMode, setGlobalPasteMode] = useState<PasteMode>('Merge')
   const [includeMuscleAreas, setIncludeMuscleAreas] = useState(true)
+  const [includeEquipment, setIncludeEquipment] = useState(true)
   const [includePlanes, setIncludePlanes] = useState(true)
   const [muscleAreaMode, setMuscleAreaMode] = useState<FieldMode>('Global')
+  const [equipmentMode, setEquipmentMode] = useState<FieldMode>('Global')
   const [planesMode, setPlanesMode] = useState<FieldMode>('Global')
   const [selectedJointRow, setSelectedJointRow] = useState<JointRow | null>(null)
   const [jointTooltip, setJointTooltip] = useState<{ visible: boolean; text: string; x: number; y: number }>({
@@ -254,14 +499,33 @@ function App() {
     x: 0,
     y: 0,
   })
+  const [dockAssignments, setDockAssignments] = useState<DockSlot[]>(DEFAULT_DOCK_ASSIGNMENTS)
+  const [draggedPaneId, setDraggedPaneId] = useState<PaneId | null>(null)
+  const [rowHeights, setRowHeights] = useState<number[]>([...DEFAULT_ROW_HEIGHTS])
+  const [rowWidths, setRowWidths] = useState<number[][]>(DEFAULT_ROW_WIDTHS.map((row) => [...row]))
+  const [activeResizeSession, setActiveResizeSession] = useState<ResizeSession | null>(null)
+  const [activePreset, setActivePreset] = useState<LayoutPreset['id'] | 'custom'>('balanced')
 
   useEffect(() => {
     const run = async () => {
       try {
         setLoading(true)
-        const [exerciseRows, taxonomyRows, muscleMapPayload, frontSvg, backSvg, jointsSvgText] = await Promise.all([
+        const [
+          exerciseRows,
+          loadedTaxonomyRows,
+          loadedPaneGroupRows,
+          loadedEquipmentRows,
+          loadedTaggingCategoryRows,
+          muscleMapPayload,
+          frontSvg,
+          backSvg,
+          jointsSvgText,
+        ] = await Promise.all([
           parseCsv<{ ExerciseName?: string; Link?: string }>('/ExerciseName_Link.csv'),
-          parseCsv<{ 'Muscle area'?: string }>('/TaggingCategories.csv'),
+          parseCsv<TaxonomyRow>('/MuscleJointArea.csv'),
+          parseCsv<PaneGroupRow>('/MusclePaneGroups.csv'),
+          parseCsv<EquipmentGroupRow>('/EquipmentTags.csv'),
+          parseCsv<TaggingCategoryRow>('/TaggingCategories.csv'),
           parseJson<MuscleMapPayload>('/muscle_selector_map.json'),
           fetch('/Front_superficial.svg').then(async (response) => {
             if (!response.ok) {
@@ -294,16 +558,48 @@ function App() {
             }
           })
 
-        const areas = taxonomyRows
-          .map((row) => (row['Muscle area'] ?? '').trim())
-          .filter((value) => value.length > 0)
+        const areas = [
+          ...loadedTaxonomyRows.map((row) => (row['Muscle area'] ?? '').trim()),
+          ...loadedPaneGroupRows.map((row) => (row['Muscle Area Tag'] ?? '').trim()),
+        ].filter((value) => value.length > 0)
+
+        const positions = uniqueSorted(
+          loadedTaggingCategoryRows
+            .map((row) => (row['Body position'] ?? '').trim())
+            .filter((value) => value.length > 0),
+        )
+
+        const levels = uniqueSorted(
+          loadedTaggingCategoryRows
+            .map((row) => (row.Level ?? '').trim())
+            .filter((value) => value.length > 0),
+        )
+
+        const difficultyValues = loadedTaggingCategoryRows
+          .map((row) => Number((row.Difficulty ?? '').trim()))
+          .filter((value) => Number.isFinite(value))
+
+        const minDifficulty = difficultyValues.length > 0 ? Math.min(...difficultyValues) : 0
+        const maxDifficulty = difficultyValues.length > 0 ? Math.max(...difficultyValues) : 10
 
         const savedTags = localStorage.getItem(STORAGE_KEY)
         if (savedTags) {
-          setTagsByExercise(JSON.parse(savedTags) as Record<string, TagState>)
+          const parsed = JSON.parse(savedTags) as Record<string, Partial<TagState>>
+          const normalizedEntries = Object.entries(parsed).map(([exerciseId, tagState]) => [
+            exerciseId,
+            normalizeTagState(tagState),
+          ])
+          setTagsByExercise(Object.fromEntries(normalizedEntries))
         }
 
         setExercises(parsedExercises)
+        setTaxonomyRows(loadedTaxonomyRows)
+        setPaneGroupRows(loadedPaneGroupRows)
+        setEquipmentGroupRows(loadedEquipmentRows)
+        setBodyPositionOptions(positions)
+        setLevelOptions(levels)
+        setDifficultyMin(minDifficulty)
+        setDifficultyMax(maxDifficulty)
         setMuscleAreaOptions(uniqueSorted(areas))
         setMuscleMap(muscleMapPayload)
         setFrontMuscleSvg(prepareSelectorSvg(frontSvg, 'front'))
@@ -347,7 +643,7 @@ function App() {
     if (!activeExercise) {
       return createEmptyTags()
     }
-    return tagsByExercise[activeExercise.id] ?? createEmptyTags()
+    return normalizeTagState(tagsByExercise[activeExercise.id])
   }, [activeExercise, tagsByExercise])
 
   const mapKeyToTagMap = useMemo(() => {
@@ -366,6 +662,182 @@ function App() {
     return map
   }, [muscleAreaOptions])
 
+  const musclesInvolvedLookup = useMemo(() => {
+    const involvedToAreas = new Map<string, Set<string>>()
+
+    const addCandidate = (muscleName: string, areaTag: string) => {
+      const normalizedMuscle = normalizeLookupValue(muscleName)
+      const normalizedArea = normalizeLookupValue(areaTag)
+      if (!normalizedMuscle || !normalizedArea) {
+        return
+      }
+
+      if (!involvedToAreas.has(normalizedMuscle)) {
+        involvedToAreas.set(normalizedMuscle, new Set())
+      }
+      involvedToAreas.get(normalizedMuscle)?.add(areaTag)
+    }
+
+    taxonomyRows.forEach((row) => {
+      const area = (row['Muscle area'] ?? '').trim()
+      const involved = (row['Muscles involved'] ?? '').trim()
+      if (!area || !involved) {
+        return
+      }
+
+      addCandidate(involved, area)
+    })
+
+    paneGroupRows.forEach((row) => {
+      const area = (row['Muscle Area Tag'] ?? '').trim()
+      const involvedList = (row['Muscles Involved'] ?? '').trim()
+      if (!area || !involvedList) {
+        return
+      }
+
+      splitCommaValues(involvedList).forEach((muscleName) => addCandidate(muscleName, area))
+    })
+
+    const areaByNormalizedOption: Record<string, string> = {}
+    muscleAreaOptions.forEach((option) => {
+      areaByNormalizedOption[normalizeLookupValue(option)] = option
+    })
+
+    const singleAreaByMuscle: Record<string, string> = {}
+    involvedToAreas.forEach((areas, involved) => {
+      if (areas.size === 1) {
+        singleAreaByMuscle[involved] = Array.from(areas)[0]
+      }
+    })
+
+    const normalizedMuscleCandidates = Object.entries(singleAreaByMuscle).map(([normalizedMuscle, area]) => ({
+      normalizedMuscle,
+      area,
+      tokens: normalizedMuscle.split(' ').filter((token) => token.length > 2),
+    }))
+
+    const findAreaByCandidate = (candidate: string): string | null => {
+      if (!candidate) {
+        return null
+      }
+
+      const directOption = areaByNormalizedOption[candidate]
+      if (directOption) {
+        return directOption
+      }
+
+      if (singleAreaByMuscle[candidate]) {
+        return singleAreaByMuscle[candidate]
+      }
+
+      const candidateTokens = candidate.split(' ').filter((token) => token.length > 2)
+      let bestArea: string | null = null
+      let bestScore = 0
+
+      normalizedMuscleCandidates.forEach((entry) => {
+        let score = 0
+
+        if (candidate.includes(entry.normalizedMuscle) || entry.normalizedMuscle.includes(candidate)) {
+          score += 4
+        }
+
+        const overlapCount = entry.tokens.filter((token) => candidateTokens.includes(token)).length
+        score += overlapCount
+
+        if (score > bestScore) {
+          bestScore = score
+          bestArea = entry.area
+        }
+      })
+
+      return bestScore >= 2 ? bestArea : null
+    }
+
+    return {
+      singleAreaByMuscle,
+      findAreaByCandidate,
+    }
+  }, [taxonomyRows, paneGroupRows, muscleAreaOptions])
+
+  const groupedMusclePaneSections = useMemo(() => {
+    const grouped = new Map<string, Array<{ area: string; muscles: string[]; joints: string[] }>>()
+
+    paneGroupRows.forEach((row) => {
+      const groupKey = (row.Group ?? '').trim().toLowerCase()
+      const area = (row['Muscle Area Tag'] ?? '').trim()
+      if (!groupKey || !area) {
+        return
+      }
+
+      const muscles = splitCommaValues((row['Muscles Involved'] ?? '').trim())
+      const joints = splitCommaValues((row['Joints Involved'] ?? '').trim())
+      if (!grouped.has(groupKey)) {
+        grouped.set(groupKey, [])
+      }
+
+      grouped.get(groupKey)?.push({ area, muscles, joints })
+    })
+
+    return Array.from(grouped.entries())
+      .map(([groupKey, entries]) => ({
+        groupKey,
+        title: formatPaneGroupTitle(groupKey),
+        entries: entries.sort((left, right) => left.area.localeCompare(right.area)),
+      }))
+      .sort((left, right) => left.title.localeCompare(right.title))
+  }, [paneGroupRows])
+
+  const groupedJointPaneSections = useMemo(() => {
+    return groupedMusclePaneSections
+      .map((section) => {
+        const labels = new Set<string>()
+        section.entries.forEach((entry) => {
+          entry.joints.forEach((jointLabel) => labels.add(jointLabel))
+        })
+
+        const joints = Array.from(labels)
+          .map((label) => ({
+            label,
+            rows: inferJointRowsFromText(label),
+          }))
+          .filter((item) => item.rows.length > 0)
+          .sort((left, right) => left.label.localeCompare(right.label))
+
+        return {
+          groupKey: section.groupKey,
+          title: section.title,
+          joints,
+        }
+      })
+      .filter((section) => section.joints.length > 0)
+  }, [groupedMusclePaneSections])
+
+  const groupedEquipmentPaneSections = useMemo(() => {
+    const grouped = new Map<string, Set<string>>()
+    const orderedCategories: string[] = []
+
+    equipmentGroupRows.forEach((row) => {
+      const category = (row.Category ?? '').trim()
+      if (!category) {
+        return
+      }
+
+      if (!grouped.has(category)) {
+        grouped.set(category, new Set())
+        orderedCategories.push(category)
+      }
+
+      splitCommaValues((row['Equipment Included'] ?? '').trim()).forEach((item) => {
+        grouped.get(category)?.add(item)
+      })
+    })
+
+    return orderedCategories.map((category) => ({
+      category,
+      equipment: uniqueSorted(Array.from(grouped.get(category) ?? [])),
+    }))
+  }, [equipmentGroupRows])
+
   const missingFromMap = useMemo(() => {
     const mappedTags = new Set(muscleMap.entries.map((entry) => entry.tag))
     return muscleAreaOptions.filter((option) => !mappedTags.has(option))
@@ -375,6 +847,7 @@ function App() {
     const taxonomyTags = new Set(muscleAreaOptions)
     return uniqueSorted(muscleMap.entries.map((entry) => entry.tag).filter((tag) => !taxonomyTags.has(tag)))
   }, [muscleMap.entries, muscleAreaOptions])
+
 
   useEffect(() => {
     setPreviewLoadError(false)
@@ -386,7 +859,7 @@ function App() {
     }
     setTagsByExercise((current) => ({
       ...current,
-      [activeExercise.id]: updater(current[activeExercise.id] ?? createEmptyTags()),
+      [activeExercise.id]: updater(normalizeTagState(current[activeExercise.id])),
     }))
   }
 
@@ -419,6 +892,40 @@ function App() {
     })
   }
 
+  const toggleEquipmentTag = (value: string) => {
+    updateActiveTags((current) => {
+      const exists = current.equipment.includes(value)
+      const next = exists ? current.equipment.filter((item) => item !== value) : [...current.equipment, value]
+      return {
+        ...current,
+        equipment: uniqueSorted(next),
+      }
+    })
+  }
+
+  const setBodyPositionTag = (value: string) => {
+    updateActiveTags((current) => ({
+      ...current,
+      bodyPositions: current.bodyPositions.includes(value)
+        ? current.bodyPositions.filter((item) => item !== value)
+        : uniqueSorted([...current.bodyPositions, value]),
+    }))
+  }
+
+  const setLevelTag = (value: string) => {
+    updateActiveTags((current) => ({
+      ...current,
+      levels: current.levels.includes(value) ? current.levels.filter((item) => item !== value) : uniqueSorted([...current.levels, value]),
+    }))
+  }
+
+  const setDifficultyTag = (value: number | null) => {
+    updateActiveTags((current) => ({
+      ...current,
+      difficulty: value,
+    }))
+  }
+
   const resolveClickedMuscleTag = (muscleElement: Element): string | null => {
     const mapKey = muscleElement.getAttribute('data-map-key') ?? ''
     const mappedByKey = mapKeyToTagMap[mapKey]
@@ -439,6 +946,16 @@ function App() {
     for (const candidate of candidates) {
       if (normalizedOptionMap[candidate]) {
         return normalizedOptionMap[candidate]
+      }
+
+      const mappedFromInvolved = musclesInvolvedLookup.singleAreaByMuscle[candidate]
+      if (mappedFromInvolved) {
+        return mappedFromInvolved
+      }
+
+      const fuzzyMappedArea = musclesInvolvedLookup.findAreaByCandidate(candidate)
+      if (fuzzyMappedArea) {
+        return fuzzyMappedArea
       }
     }
 
@@ -571,7 +1088,7 @@ function App() {
       region.classList.toggle('selected', selected)
       region.classList.add('interactive-zone')
     })
-  }, [activeTags.muscleAreas, mapKeyToTagMap, normalizedOptionMap, frontMuscleSvg, backMuscleSvg])
+  }, [activeTags.muscleAreas, mapKeyToTagMap, normalizedOptionMap, musclesInvolvedLookup, frontMuscleSvg, backMuscleSvg])
 
   useEffect(() => {
     if (!jointsMapRef.current) {
@@ -634,6 +1151,10 @@ function App() {
   const applyPasteToTarget = (target: TagState, source: TagState): TagState => {
     const next: TagState = {
       muscleAreas: [...target.muscleAreas],
+      equipment: [...target.equipment],
+      bodyPositions: [...target.bodyPositions],
+      difficulty: target.difficulty,
+      levels: [...target.levels],
       planes: { ...target.planes },
     }
 
@@ -664,6 +1185,19 @@ function App() {
       next.planes = nextPlanes
     }
 
+    if (includeEquipment) {
+      const mode = resolveMode(equipmentMode)
+      if (mode === 'Replace') {
+        next.equipment = uniqueSorted(source.equipment)
+      } else {
+        next.equipment = uniqueSorted([...target.equipment, ...source.equipment])
+      }
+    }
+
+    next.bodyPositions = uniqueSorted([...target.bodyPositions, ...source.bodyPositions])
+    next.difficulty = source.difficulty
+    next.levels = uniqueSorted([...target.levels, ...source.levels])
+
     return next
   }
 
@@ -683,12 +1217,170 @@ function App() {
     setTagsByExercise((current) => {
       const next = { ...current }
       targets.forEach((targetId) => {
-        const existing = current[targetId] ?? createEmptyTags()
+        const existing = normalizeTagState(current[targetId])
         next[targetId] = applyPasteToTarget(existing, copiedTags)
       })
       return next
     })
   }
+
+  const handlePaneDragStart = (paneId: PaneId) => {
+    setDraggedPaneId(paneId)
+  }
+
+  const handlePaneDragEnd = () => {
+    setDraggedPaneId(null)
+  }
+
+  const handleDockDrop = (targetIndex: number) => {
+    if (!draggedPaneId) {
+      return
+    }
+
+    setDockAssignments((current) => {
+      const sourceIndex = current.findIndex((paneId) => paneId === draggedPaneId)
+      if (sourceIndex === -1 || sourceIndex === targetIndex) {
+        return current
+      }
+
+      const next = [...current]
+      const targetPane = next[targetIndex]
+      next[targetIndex] = draggedPaneId
+      next[sourceIndex] = targetPane
+      return next
+    })
+    setDraggedPaneId(null)
+  }
+
+  const resetPaneLayout = () => {
+    setDockAssignments([...DEFAULT_DOCK_ASSIGNMENTS])
+    setRowHeights([...DEFAULT_ROW_HEIGHTS])
+    setRowWidths(DEFAULT_ROW_WIDTHS.map((row) => [...row]))
+    setActivePreset('custom')
+  }
+
+  const applyLayoutPreset = (presetId: LayoutPreset['id']) => {
+    const preset = LAYOUT_PRESETS.find((item) => item.id === presetId)
+    if (!preset) {
+      return
+    }
+
+    setRowHeights([...preset.rowHeights])
+    setRowWidths(preset.rowWidths.map((row) => [...row]))
+    setActivePreset(preset.id)
+  }
+
+  const startColumnResize = (rowIndex: number, paneIndex: number, event: MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault()
+    event.stopPropagation()
+
+    const row = rowWidths[rowIndex]
+    if (!row || paneIndex < 0 || paneIndex >= row.length) {
+      return
+    }
+
+    setActiveResizeSession({
+      type: 'column',
+      rowIndex,
+      paneIndex,
+      startClient: event.clientX,
+      startSize: row[paneIndex],
+    })
+    setActivePreset('custom')
+  }
+
+  const startRowResize = (rowIndex: number, event: MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault()
+    event.stopPropagation()
+
+    if (rowIndex < 0 || rowIndex >= rowHeights.length) {
+      return
+    }
+
+    setActiveResizeSession({
+      type: 'row',
+      rowIndex,
+      startClient: event.clientY,
+      startSize: rowHeights[rowIndex],
+    })
+    setActivePreset('custom')
+  }
+
+  useEffect(() => {
+    if (!activeResizeSession) {
+      return
+    }
+
+    const handleMouseMove = (event: globalThis.MouseEvent) => {
+      if (activeResizeSession.type === 'column') {
+        const rowElement = dockRowRefs.current[activeResizeSession.rowIndex]
+        if (!rowElement) {
+          return
+        }
+
+        const rowRect = rowElement.getBoundingClientRect()
+        if (rowRect.width <= 0) {
+          return
+        }
+
+        const columns = DOCK_ROW_SIZES[activeResizeSession.rowIndex]
+        if (!columns || columns < 2) {
+          return
+        }
+
+        const delta = (event.clientX - activeResizeSession.startClient) / rowRect.width
+        const maxSize = 1 - MIN_COLUMN_SIZE * (columns - 1)
+        const nextSize = clamp(activeResizeSession.startSize + delta, MIN_COLUMN_SIZE, maxSize)
+        const remaining = (1 - nextSize) / (columns - 1)
+
+        setRowWidths((current) => {
+          const next = current.map((row) => [...row])
+          next[activeResizeSession.rowIndex] = next[activeResizeSession.rowIndex].map((_, columnIndex) =>
+            columnIndex === activeResizeSession.paneIndex ? nextSize : remaining,
+          )
+          return next
+        })
+      }
+
+      if (activeResizeSession.type === 'row') {
+        const layoutElement = dockLayoutRef.current
+        if (!layoutElement) {
+          return
+        }
+
+        const layoutRect = layoutElement.getBoundingClientRect()
+        if (layoutRect.height <= 0) {
+          return
+        }
+
+        const rowsCount = DOCK_ROW_SIZES.length
+        if (rowsCount < 2) {
+          return
+        }
+
+        const delta = (event.clientY - activeResizeSession.startClient) / layoutRect.height
+        const maxSize = 1 - MIN_ROW_SIZE * (rowsCount - 1)
+        const nextSize = clamp(activeResizeSession.startSize + delta, MIN_ROW_SIZE, maxSize)
+        const remaining = (1 - nextSize) / (rowsCount - 1)
+
+        setRowHeights((current) =>
+          current.map((_, index) => (index === activeResizeSession.rowIndex ? nextSize : remaining)),
+        )
+      }
+    }
+
+    const handleMouseUp = () => {
+      setActiveResizeSession(null)
+    }
+
+    window.addEventListener('mousemove', handleMouseMove)
+    window.addEventListener('mouseup', handleMouseUp)
+
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove)
+      window.removeEventListener('mouseup', handleMouseUp)
+    }
+  }, [activeResizeSession])
 
   if (loading) {
     return <div className="app-shell">Loading exercises and taxonomy...</div>
@@ -698,6 +1390,543 @@ function App() {
     return <div className="app-shell">Failed to load data: {error}</div>
   }
 
+  const difficultyMid = Math.round((difficultyMin + difficultyMax) / 2)
+
+  const paneTitles: Record<PaneId, string> = {
+    'exercise-library': 'Exercise Preview',
+    'exercise-list': 'Exercise List',
+    'session-controls': 'Session Controls',
+    'muscle-map': 'Muscle Area Map',
+    'muscles-involved': 'Muscles Involved',
+    equipment: 'Equipment',
+    'body-position': 'Body Position',
+    difficulty: 'Difficulty',
+    level: 'Level',
+    joints: 'Joints',
+    'planes-matrix': 'Planes Matrix',
+  }
+
+  const renderPaneContent = (paneId: PaneId) => {
+    switch (paneId) {
+      case 'exercise-library':
+        return (
+          <>
+            {activeExercise ? (
+              <div className="preview-card">
+                <div className="preview-title">Preview: {activeExercise.name}</div>
+                <div className="preview-media">
+                  {activeExercise.link && !previewLoadError && isLikelyVideoLink(activeExercise.link) ? (
+                    <video controls preload="metadata" src={activeExercise.link} onError={() => setPreviewLoadError(true)} />
+                  ) : (
+                    <div className="preview-fallback">
+                      {previewLoadError ? 'Preview unavailable for this link.' : 'No embeddable preview available.'}
+                    </div>
+                  )}
+                </div>
+                {activeExercise.link && (
+                  <a href={activeExercise.link} target="_blank" rel="noreferrer">
+                    Open exercise link
+                  </a>
+                )}
+              </div>
+            ) : (
+              <p>Select an exercise to preview.</p>
+            )}
+          </>
+        )
+
+      case 'exercise-list':
+        return (
+          <>
+            <input
+              className="search"
+              value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
+              placeholder="Search exercise name..."
+            />
+            <div className="list">
+              {filteredExercises.map((exercise) => {
+                const checked = selectedIds.has(exercise.id)
+                return (
+                  <div key={exercise.id} className={`list-item ${activeExercise?.id === exercise.id ? 'active' : ''}`}>
+                    <input
+                      type="checkbox"
+                      checked={checked}
+                      onChange={() => toggleExerciseSelection(exercise.id)}
+                      aria-label={`Select ${exercise.name}`}
+                    />
+                    <button className="link-btn" onClick={() => selectOnlyExercise(exercise.id)}>
+                      {exercise.name}
+                    </button>
+                  </div>
+                )
+              })}
+            </div>
+          </>
+        )
+
+      case 'session-controls':
+        return !activeExercise ? (
+          <p>Select an exercise to start tagging.</p>
+        ) : (
+          <>
+            <div className="editor-header">
+              <h2>{activeExercise.name}</h2>
+              {activeExercise.link && (
+                <a href={activeExercise.link} target="_blank" rel="noreferrer">
+                  Open exercise link
+                </a>
+              )}
+            </div>
+
+            <div className="toolbar">
+              <button onClick={handleCopyTags}>Copy Tags</button>
+              <button onClick={handlePasteTags} disabled={!copiedTags || selectedIds.size === 0}>
+                Paste to Selected
+              </button>
+              <span className="copied-source">{copiedFrom ? `Copied from: ${copiedFrom}` : 'No copied tags yet'}</span>
+            </div>
+
+            <div className="paste-config">
+              <h3>Paste Semantics</h3>
+              <div className="config-grid">
+                <label>
+                  Global mode
+                  <select value={globalPasteMode} onChange={(event) => setGlobalPasteMode(event.target.value as PasteMode)}>
+                    <option value="Merge">Merge</option>
+                    <option value="Replace">Replace</option>
+                  </select>
+                </label>
+
+                <label>
+                  Muscle area mode
+                  <select value={muscleAreaMode} onChange={(event) => setMuscleAreaMode(event.target.value as FieldMode)}>
+                    <option value="Global">Use global</option>
+                    <option value="Merge">Merge</option>
+                    <option value="Replace">Replace</option>
+                  </select>
+                </label>
+
+                <label>
+                  Equipment mode
+                  <select value={equipmentMode} onChange={(event) => setEquipmentMode(event.target.value as FieldMode)}>
+                    <option value="Global">Use global</option>
+                    <option value="Merge">Merge</option>
+                    <option value="Replace">Replace</option>
+                  </select>
+                </label>
+
+                <label>
+                  Planes mode
+                  <select value={planesMode} onChange={(event) => setPlanesMode(event.target.value as FieldMode)}>
+                    <option value="Global">Use global</option>
+                    <option value="Merge">Merge</option>
+                    <option value="Replace">Replace</option>
+                  </select>
+                </label>
+              </div>
+
+              <div className="toggle-row">
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={includeMuscleAreas}
+                    onChange={(event) => setIncludeMuscleAreas(event.target.checked)}
+                  />
+                  Include muscle area
+                </label>
+                <label>
+                  <input type="checkbox" checked={includeEquipment} onChange={(event) => setIncludeEquipment(event.target.checked)} />
+                  Include equipment
+                </label>
+                <label>
+                  <input type="checkbox" checked={includePlanes} onChange={(event) => setIncludePlanes(event.target.checked)} />
+                  Include planes matrix
+                </label>
+              </div>
+            </div>
+          </>
+        )
+
+      case 'muscle-map':
+        return !activeExercise ? (
+          <p>Select an exercise to start tagging.</p>
+        ) : (
+          <>
+            <div className="muscle-map-shell">
+              <div className="muscle-map-with-selection">
+                <div
+                  ref={muscleMapRef}
+                  className="muscle-map-panels"
+                  onClick={handleMuscleMapClick}
+                  onMouseMove={handleMuscleMapMove}
+                  onMouseLeave={handleMuscleMapLeave}
+                  role="img"
+                  aria-label="Clickable muscle map"
+                >
+                  <div className="muscle-map-panel">
+                    <div className="muscle-map-title">Front</div>
+                    <div className="muscle-map-svg" dangerouslySetInnerHTML={{ __html: frontMuscleSvg }} />
+                  </div>
+                  <div className="muscle-map-panel">
+                    <div className="muscle-map-title">Back</div>
+                    <div className="muscle-map-svg" dangerouslySetInnerHTML={{ __html: backMuscleSvg }} />
+                  </div>
+                  {tooltip.visible && (
+                    <div className="muscle-tooltip" style={{ left: `${tooltip.x}px`, top: `${tooltip.y}px` }} role="tooltip">
+                      {tooltip.text}
+                    </div>
+                  )}
+                </div>
+
+                <aside className="selected-muscles-panel" aria-label="Selected muscle areas">
+                  <h4>Selected Muscle Areas</h4>
+                  {activeTags.muscleAreas.length === 0 ? (
+                    <p className="empty-selection">Click muscles to add selections.</p>
+                  ) : (
+                    <div className="selected-muscle-buttons">
+                      {activeTags.muscleAreas.map((area) => (
+                        <button key={area} className="selected-muscle-btn" onClick={() => toggleMuscleArea(area)}>
+                          {area}
+                          <span className="remove-mark" aria-hidden="true">
+                            ×
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </aside>
+              </div>
+            </div>
+
+            <p className="helper-text">Click a muscle shape to toggle exactly one matching muscle area tag from the workbook mapping.</p>
+
+            {(missingFromMap.length > 0 || mapOnlyTags.length > 0) && (
+              <div className="mapping-warning">
+                <strong>Mapping check:</strong>
+                {missingFromMap.length > 0 && <p>Missing SVG mapping for: {missingFromMap.join(', ')}</p>}
+                {mapOnlyTags.length > 0 && <p>Mapped tags not in taxonomy: {mapOnlyTags.join(', ')}</p>}
+              </div>
+            )}
+
+            <details>
+              <summary>Manual fine-tune muscle areas</summary>
+              <div className="option-grid">
+                {muscleAreaOptions.map((option) => (
+                  <label key={option} className="option-item">
+                    <input
+                      type="checkbox"
+                      checked={activeTags.muscleAreas.includes(option)}
+                      onChange={() => toggleMuscleArea(option)}
+                    />
+                    {option}
+                  </label>
+                ))}
+              </div>
+            </details>
+          </>
+        )
+
+      case 'muscles-involved':
+        return !activeExercise ? (
+          <p>Select an exercise to start tagging.</p>
+        ) : (
+          <div className="muscles-involved-panel" aria-label="Muscles involved grouped by workbook sections">
+            <p className="helper-text">Grouping follows the workbook sheets: upper body, trunk & core, and lower body.</p>
+            <div className="muscle-groups-grid">
+              {groupedMusclePaneSections.map((group) => (
+                <section key={group.groupKey} className="muscle-group-card">
+                  <div className="muscle-group-title-row">
+                    <h5>{group.title}</h5>
+                  </div>
+                  <div className="area-groups-stack">
+                    {group.entries.map((entry) => {
+                      const areaSelected = activeTags.muscleAreas.includes(entry.area)
+                      return (
+                        <div key={`${group.groupKey}-${entry.area}`} className="muscle-area-card">
+                          <div className="muscle-group-title-row">
+                            <h6>{entry.area}</h6>
+                            <button
+                              type="button"
+                              className={`muscle-group-toggle ${areaSelected ? 'active' : ''}`}
+                              onClick={() => toggleMuscleArea(entry.area)}
+                            >
+                              {areaSelected ? 'Selected' : 'Select'}
+                            </button>
+                          </div>
+                          <div className="muscle-tags-wrap">
+                            {entry.muscles.map((muscleName) => (
+                              <button
+                                key={`${entry.area}-${muscleName}`}
+                                type="button"
+                                className={`muscle-tag-btn ${areaSelected ? 'active' : ''}`}
+                                onClick={() => toggleMuscleArea(entry.area)}
+                                title={`Toggle area: ${entry.area}`}
+                              >
+                                <span>{muscleName}</span>
+                              </button>
+                            ))}
+                          </div>
+                          {entry.joints.length > 0 && <p className="area-joints">Joints: {entry.joints.join(', ')}</p>}
+                        </div>
+                      )
+                    })}
+                  </div>
+                </section>
+              ))}
+            </div>
+          </div>
+        )
+
+      case 'equipment':
+        return !activeExercise ? (
+          <p>Select an exercise to start tagging.</p>
+        ) : (
+          <div className="equipment-pane" aria-label="Equipment tags grouped by category">
+            <p className="helper-text">Categories and equipment options come from EquipmentTags.xlsx.</p>
+
+            {activeTags.equipment.length > 0 && (
+              <div className="equipment-selected">
+                <h5>Selected equipment</h5>
+                <div className="muscle-tags-wrap">
+                  {activeTags.equipment.map((item) => (
+                    <button key={`selected-${item}`} className="muscle-tag-btn active" onClick={() => toggleEquipmentTag(item)}>
+                      {item}
+                      <span className="remove-mark" aria-hidden="true">
+                        ×
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div className="equipment-groups-grid">
+              {groupedEquipmentPaneSections.map((section) => (
+                <section key={`equipment-${section.category}`} className="muscle-group-card">
+                  <div className="muscle-group-title-row">
+                    <h5>{section.category}</h5>
+                  </div>
+                  <div className="muscle-tags-wrap">
+                    {section.equipment.map((item) => {
+                      const selected = activeTags.equipment.includes(item)
+                      return (
+                        <button
+                          key={`${section.category}-${item}`}
+                          type="button"
+                          className={`muscle-tag-btn ${selected ? 'active' : ''}`}
+                          onClick={() => toggleEquipmentTag(item)}
+                        >
+                          {item}
+                        </button>
+                      )
+                    })}
+                  </div>
+                </section>
+              ))}
+            </div>
+          </div>
+        )
+
+      case 'body-position':
+        return !activeExercise ? (
+          <p>Select an exercise to start tagging.</p>
+        ) : (
+          <div className="simple-tag-pane">
+            <p className="helper-text">Choose one or more body position tags.</p>
+            <div className="muscle-tags-wrap">
+              {bodyPositionOptions.map((position) => {
+                const selected = activeTags.bodyPositions.includes(position)
+                return (
+                  <button
+                    key={`body-position-${position}`}
+                    type="button"
+                    className={`muscle-tag-btn ${selected ? 'active' : ''}`}
+                    onClick={() => setBodyPositionTag(position)}
+                  >
+                    {position}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        )
+
+      case 'difficulty':
+        return !activeExercise ? (
+          <p>Select an exercise to start tagging.</p>
+        ) : (
+          <div className="simple-tag-pane">
+            <p className="helper-text">Set difficulty using the slider.</p>
+            <div className="difficulty-pane">
+              <input
+                type="range"
+                min={difficultyMin}
+                max={difficultyMax}
+                step={1}
+                value={activeTags.difficulty ?? difficultyMin}
+                onMouseDown={(event) => event.stopPropagation()}
+                onChange={(event) => setDifficultyTag(Number(event.target.value))}
+              />
+              <div className="difficulty-anchors">
+                <span>Beginner ({difficultyMin})</span>
+                <span>Intermediate ({difficultyMid})</span>
+                <span>Advanced ({difficultyMax})</span>
+              </div>
+              <div className="difficulty-value-row">
+                <span>Selected value: {activeTags.difficulty ?? 'Not set'}</span>
+                <button type="button" onClick={() => setDifficultyTag(null)}>
+                  Clear
+                </button>
+              </div>
+            </div>
+          </div>
+        )
+
+      case 'level':
+        return !activeExercise ? (
+          <p>Select an exercise to start tagging.</p>
+        ) : (
+          <div className="simple-tag-pane">
+            <p className="helper-text">Choose one or more level tags.</p>
+            {levelOptions.length === 0 ? (
+              <p className="empty-selection">No Level values found in TaggingCategories.csv column U.</p>
+            ) : (
+              <div className="muscle-tags-wrap">
+                {levelOptions.map((levelLabel) => {
+                  const selected = activeTags.levels.includes(levelLabel)
+                  return (
+                    <button
+                      key={`level-${levelLabel}`}
+                      type="button"
+                      className={`muscle-tag-btn ${selected ? 'active' : ''}`}
+                      onClick={() => setLevelTag(levelLabel)}
+                    >
+                      {levelLabel}
+                    </button>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+        )
+
+      case 'joints':
+        return !activeExercise ? (
+          <p>Select an exercise to start tagging.</p>
+        ) : (
+          <div className="joints-pane">
+            <div
+              ref={jointsMapRef}
+              className="joints-map"
+              onClick={handleJointsMapClick}
+              onMouseMove={handleJointsMapMove}
+              onMouseLeave={handleJointsMapLeave}
+              role="img"
+              aria-label="Clickable joints map"
+            >
+              <div className="joints-map-svg" dangerouslySetInnerHTML={{ __html: jointsSvg }} />
+              {jointTooltip.visible && (
+                <div className="joint-tooltip" style={{ left: `${jointTooltip.x}px`, top: `${jointTooltip.y}px` }} role="tooltip">
+                  {jointTooltip.text}
+                </div>
+              )}
+            </div>
+
+            <aside className="joint-options-panel" aria-label="Joint options">
+              <h4>{selectedJointRow ? `${selectedJointRow} options` : 'Select a joint'}</h4>
+              {selectedJointRow ? (
+                <div className="joint-plane-buttons">
+                  {PLANES.map((plane) => {
+                    const checked = (activeTags.planes[selectedJointRow] ?? []).includes(plane)
+                    const label = plane === 'Sagittal' ? 'Saggital' : plane
+                    return (
+                      <button
+                        key={`${selectedJointRow}-${plane}`}
+                        className={`joint-plane-btn ${checked ? 'active' : ''}`}
+                        onClick={() => togglePlane(selectedJointRow, plane)}
+                      >
+                        {label}
+                      </button>
+                    )
+                  })}
+                </div>
+              ) : (
+                <p className="empty-selection">Click a joint circle to choose planes.</p>
+              )}
+
+              <div className="workbook-joints-panel">
+                <h5>Workbook joint groups</h5>
+                {groupedJointPaneSections.map((section) => (
+                  <section key={`joint-${section.groupKey}`} className="workbook-joint-section">
+                    <h6>{section.title}</h6>
+                    <div className="workbook-joint-chip-row">
+                      {section.joints.map((joint) => {
+                        const isActive = selectedJointRow ? joint.rows.includes(selectedJointRow) : false
+                        return (
+                          <button
+                            key={`${section.groupKey}-${joint.label}`}
+                            className={`workbook-joint-chip ${isActive ? 'active' : ''}`}
+                            onClick={() => setSelectedJointRow(joint.rows[0])}
+                            title={`Maps to: ${joint.rows.join(', ')}`}
+                          >
+                            {joint.label}
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </section>
+                ))}
+              </div>
+            </aside>
+          </div>
+        )
+
+      case 'planes-matrix':
+        return !activeExercise ? (
+          <p>Select an exercise to start tagging.</p>
+        ) : (
+          <table className="planes-table">
+            <thead>
+              <tr>
+                <th>Joint</th>
+                {PLANES.map((plane) => (
+                  <th key={plane}>{plane}</th>
+                ))}
+                <th>Quick Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {JOINT_ROWS.map((row) => (
+                <tr key={row} className={selectedJointRow === row ? 'joint-row-focused' : ''}>
+                  <td>{row}</td>
+                  {PLANES.map((plane) => (
+                    <td key={`${row}-${plane}`}>
+                      <input
+                        type="checkbox"
+                        checked={(activeTags.planes[row] ?? []).includes(plane)}
+                        onChange={() => togglePlane(row, plane)}
+                        aria-label={`${row} ${plane}`}
+                      />
+                    </td>
+                  ))}
+                  <td>
+                    <div className="row-actions">
+                      <button onClick={() => setAllPlanesForRow(row)}>All 3</button>
+                      <button onClick={() => clearPlaneRow(row)}>Clear</button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )
+
+      default:
+        return null
+    }
+  }
+
   return (
     <div className="app-shell">
       <header className="app-header">
@@ -705,303 +1934,102 @@ function App() {
         <p>
           {exercises.length} exercises loaded • {selectedIds.size} selected
         </p>
+        <div className="layout-controls" role="group" aria-label="Pane layout controls">
+          <button type="button" onClick={resetPaneLayout}>
+            Reset pane layout
+          </button>
+          {LAYOUT_PRESETS.map((preset) => (
+            <button
+              key={preset.id}
+              type="button"
+              className={`layout-preset-btn ${activePreset === preset.id ? 'active' : ''}`}
+              onClick={() => applyLayoutPreset(preset.id)}
+            >
+              {preset.label}
+            </button>
+          ))}
+        </div>
       </header>
 
-      <div className="layout">
-        <section className="panel">
-          <h2>Exercise Library</h2>
+      <div ref={dockLayoutRef} className="dock-layout">
+        {DOCK_ROW_SIZES.map((columns, rowIndex) => {
+          const rowStart = DOCK_ROW_SIZES.slice(0, rowIndex).reduce((sum, value) => sum + value, 0)
+          const rowSlots = dockAssignments.slice(rowStart, rowStart + columns)
 
-          {activeExercise && (
-            <div className="preview-card">
-              <div className="preview-title">Preview: {activeExercise.name}</div>
-              <div className="preview-media">
-                {activeExercise.link && !previewLoadError && isLikelyVideoLink(activeExercise.link) ? (
-                  <video
-                    controls
-                    preload="metadata"
-                    src={activeExercise.link}
-                    onError={() => setPreviewLoadError(true)}
-                  />
-                ) : (
-                  <div className="preview-fallback">
-                    {previewLoadError ? 'Preview unavailable for this link.' : 'No embeddable preview available.'}
-                  </div>
-                )}
-              </div>
-              {activeExercise.link && (
-                <a href={activeExercise.link} target="_blank" rel="noreferrer">
-                  Open exercise link
-                </a>
-              )}
-            </div>
-          )}
-
-          <input
-            className="search"
-            value={searchQuery}
-            onChange={(event) => setSearchQuery(event.target.value)}
-            placeholder="Search exercise name..."
-          />
-          <div className="list">
-            {filteredExercises.map((exercise) => {
-              const checked = selectedIds.has(exercise.id)
-              return (
-                <div key={exercise.id} className={`list-item ${activeExercise?.id === exercise.id ? 'active' : ''}`}>
-                  <input
-                    type="checkbox"
-                    checked={checked}
-                    onChange={() => toggleExerciseSelection(exercise.id)}
-                    aria-label={`Select ${exercise.name}`}
-                  />
-                  <button className="link-btn" onClick={() => selectOnlyExercise(exercise.id)}>
-                    {exercise.name}
-                  </button>
-                </div>
-              )
-            })}
-          </div>
-        </section>
-
-        <section className="panel editor">
-          {!activeExercise && <p>Select an exercise to start tagging.</p>}
-          {activeExercise && (
-            <>
-              <div className="editor-header">
-                <h2>{activeExercise.name}</h2>
-                {activeExercise.link && (
-                  <a href={activeExercise.link} target="_blank" rel="noreferrer">
-                    Open exercise link
-                  </a>
-                )}
-              </div>
-
-              <div className="toolbar">
-                <button onClick={handleCopyTags}>Copy Tags</button>
-                <button onClick={handlePasteTags} disabled={!copiedTags || selectedIds.size === 0}>
-                  Paste to Selected
-                </button>
-                <span className="copied-source">{copiedFrom ? `Copied from: ${copiedFrom}` : 'No copied tags yet'}</span>
-              </div>
-
-              <div className="paste-config">
-                <h3>Paste Semantics</h3>
-                <div className="config-grid">
-                  <label>
-                    Global mode
-                    <select value={globalPasteMode} onChange={(event) => setGlobalPasteMode(event.target.value as PasteMode)}>
-                      <option value="Merge">Merge</option>
-                      <option value="Replace">Replace</option>
-                    </select>
-                  </label>
-
-                  <label>
-                    Muscle area mode
-                    <select value={muscleAreaMode} onChange={(event) => setMuscleAreaMode(event.target.value as FieldMode)}>
-                      <option value="Global">Use global</option>
-                      <option value="Merge">Merge</option>
-                      <option value="Replace">Replace</option>
-                    </select>
-                  </label>
-
-                  <label>
-                    Planes mode
-                    <select value={planesMode} onChange={(event) => setPlanesMode(event.target.value as FieldMode)}>
-                      <option value="Global">Use global</option>
-                      <option value="Merge">Merge</option>
-                      <option value="Replace">Replace</option>
-                    </select>
-                  </label>
-                </div>
-
-                <div className="toggle-row">
-                  <label>
-                    <input
-                      type="checkbox"
-                      checked={includeMuscleAreas}
-                      onChange={(event) => setIncludeMuscleAreas(event.target.checked)}
-                    />
-                    Include muscle area
-                  </label>
-                  <label>
-                    <input
-                      type="checkbox"
-                      checked={includePlanes}
-                      onChange={(event) => setIncludePlanes(event.target.checked)}
-                    />
-                    Include planes matrix
-                  </label>
-                </div>
-              </div>
-
-              <div className="field-group">
-                <h3>Muscle Area</h3>
-
-                <div className="muscle-map-shell">
-                  <div className="muscle-map-with-selection">
+          return (
+            <div
+              key={`dock-row-shell-${rowIndex}`}
+              className="dock-row-shell"
+              style={{ flex: `${rowHeights[rowIndex]} 1 0` }}
+            >
+              <div
+                className="dock-row"
+                ref={(node) => {
+                  dockRowRefs.current[rowIndex] = node
+                }}
+                style={{
+                  gridTemplateColumns: rowWidths[rowIndex].map((ratio) => `${ratio}fr`).join(' '),
+                }}
+              >
+                {rowSlots.map((paneId, localIndex) => {
+                  const index = rowStart + localIndex
+                  return (
                     <div
-                      ref={muscleMapRef}
-                      className="muscle-map-panels"
-                      onClick={handleMuscleMapClick}
-                      onMouseMove={handleMuscleMapMove}
-                      onMouseLeave={handleMuscleMapLeave}
-                      role="img"
-                      aria-label="Clickable muscle map"
+                      key={`dock-${index}`}
+                      className="dock-slot"
+                      onDragOver={(event) => event.preventDefault()}
+                      onDrop={() => handleDockDrop(index)}
                     >
-                      <div className="muscle-map-panel">
-                        <div className="muscle-map-title">Front</div>
-                        <div className="muscle-map-svg" dangerouslySetInnerHTML={{ __html: frontMuscleSvg }} />
-                      </div>
-                      <div className="muscle-map-panel">
-                        <div className="muscle-map-title">Back</div>
-                        <div className="muscle-map-svg" dangerouslySetInnerHTML={{ __html: backMuscleSvg }} />
-                      </div>
-                      {tooltip.visible && (
-                        <div
-                          className="muscle-tooltip"
-                          style={{ left: `${tooltip.x}px`, top: `${tooltip.y}px` }}
-                          role="tooltip"
+                      {paneId ? (
+                        <section
+                          className={`panel dock-pane ${draggedPaneId === paneId ? 'drag-active' : ''}`}
                         >
-                          {tooltip.text}
-                        </div>
+                          <div
+                            className="dock-pane-header"
+                            draggable
+                            onDragStart={(event) => {
+                              event.dataTransfer.setData('text/plain', paneId)
+                              handlePaneDragStart(paneId)
+                            }}
+                            onDragEnd={handlePaneDragEnd}
+                          >
+                            <h2>{paneTitles[paneId]}</h2>
+                            <span className="pane-drag-handle" aria-label="Drag pane" title="Drag pane">
+                              ⋮⋮
+                            </span>
+                          </div>
+                          <div className="dock-pane-body">{renderPaneContent(paneId)}</div>
+                        </section>
+                      ) : (
+                        <div className="dock-empty">Drop pane here</div>
+                      )}
+
+                      {localIndex < columns - 1 && (
+                        <button
+                          type="button"
+                          className="dock-resizer dock-resizer-column"
+                          onMouseDown={(event) => startColumnResize(rowIndex, localIndex, event)}
+                          aria-label="Resize pane width"
+                          title="Drag to resize pane widths"
+                        />
                       )}
                     </div>
-
-                    <aside className="selected-muscles-panel" aria-label="Selected muscle areas">
-                      <h4>Selected Muscle Areas</h4>
-                      {activeTags.muscleAreas.length === 0 ? (
-                        <p className="empty-selection">Click muscles to add selections.</p>
-                      ) : (
-                        <div className="selected-muscle-buttons">
-                          {activeTags.muscleAreas.map((area) => (
-                            <button key={area} className="selected-muscle-btn" onClick={() => toggleMuscleArea(area)}>
-                              {area}
-                              <span className="remove-mark" aria-hidden="true">
-                                ×
-                              </span>
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                    </aside>
-                  </div>
-                </div>
-
-                <p className="helper-text">Click a muscle shape to toggle exactly one matching tag from TaggingCategories.</p>
-
-                {(missingFromMap.length > 0 || mapOnlyTags.length > 0) && (
-                  <div className="mapping-warning">
-                    <strong>Mapping check:</strong>
-                    {missingFromMap.length > 0 && <p>Missing SVG mapping for: {missingFromMap.join(', ')}</p>}
-                    {mapOnlyTags.length > 0 && <p>Mapped tags not in taxonomy: {mapOnlyTags.join(', ')}</p>}
-                  </div>
-                )}
-
-                <details>
-                  <summary>Manual fine-tune muscle areas</summary>
-                  <div className="option-grid">
-                    {muscleAreaOptions.map((option) => (
-                    <label key={option} className="option-item">
-                      <input
-                        type="checkbox"
-                        checked={activeTags.muscleAreas.includes(option)}
-                        onChange={() => toggleMuscleArea(option)}
-                      />
-                      {option}
-                    </label>
-                    ))}
-                  </div>
-                </details>
+                  )
+                })}
               </div>
 
-              <div className="field-group">
-                <h3>Joints</h3>
-                <div className="joints-pane">
-                  <div
-                    ref={jointsMapRef}
-                    className="joints-map"
-                    onClick={handleJointsMapClick}
-                    onMouseMove={handleJointsMapMove}
-                    onMouseLeave={handleJointsMapLeave}
-                    role="img"
-                    aria-label="Clickable joints map"
-                  >
-                    <div className="joints-map-svg" dangerouslySetInnerHTML={{ __html: jointsSvg }} />
-                    {jointTooltip.visible && (
-                      <div
-                        className="joint-tooltip"
-                        style={{ left: `${jointTooltip.x}px`, top: `${jointTooltip.y}px` }}
-                        role="tooltip"
-                      >
-                        {jointTooltip.text}
-                      </div>
-                    )}
-                  </div>
-
-                  <aside className="joint-options-panel" aria-label="Joint options">
-                    <h4>{selectedJointRow ? `${selectedJointRow} options` : 'Select a joint'}</h4>
-                    {selectedJointRow ? (
-                      <div className="joint-plane-buttons">
-                        {PLANES.map((plane) => {
-                          const checked = (activeTags.planes[selectedJointRow] ?? []).includes(plane)
-                          const label = plane === 'Sagittal' ? 'Saggital' : plane
-                          return (
-                            <button
-                              key={`${selectedJointRow}-${plane}`}
-                              className={`joint-plane-btn ${checked ? 'active' : ''}`}
-                              onClick={() => togglePlane(selectedJointRow, plane)}
-                            >
-                              {label}
-                            </button>
-                          )
-                        })}
-                      </div>
-                    ) : (
-                      <p className="empty-selection">Click a joint circle to choose planes.</p>
-                    )}
-                  </aside>
-                </div>
-              </div>
-
-              <div className="field-group">
-                <h3>Planes of Movement Matrix</h3>
-                <table className="planes-table">
-                  <thead>
-                    <tr>
-                      <th>Joint</th>
-                      {PLANES.map((plane) => (
-                        <th key={plane}>{plane}</th>
-                      ))}
-                      <th>Quick Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {JOINT_ROWS.map((row) => (
-                      <tr key={row} className={selectedJointRow === row ? 'joint-row-focused' : ''}>
-                        <td>{row}</td>
-                        {PLANES.map((plane) => (
-                          <td key={`${row}-${plane}`}>
-                            <input
-                              type="checkbox"
-                              checked={(activeTags.planes[row] ?? []).includes(plane)}
-                              onChange={() => togglePlane(row, plane)}
-                              aria-label={`${row} ${plane}`}
-                            />
-                          </td>
-                        ))}
-                        <td>
-                          <div className="row-actions">
-                            <button onClick={() => setAllPlanesForRow(row)}>All 3</button>
-                            <button onClick={() => clearPlaneRow(row)}>Clear</button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </>
-          )}
-        </section>
+              {rowIndex < DOCK_ROW_SIZES.length - 1 && (
+                <button
+                  type="button"
+                  className="dock-resizer dock-resizer-row"
+                  onMouseDown={(event) => startRowResize(rowIndex, event)}
+                  aria-label="Resize row height"
+                  title="Drag to resize row heights"
+                />
+              )}
+            </div>
+          )
+        })}
       </div>
     </div>
   )

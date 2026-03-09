@@ -1,0 +1,146 @@
+[
+  {
+    "Group": "upperbody",
+    "Muscle Area Tag": "Shoulder anterior",
+    "Muscles Involved": "Anterior Deltoid, Pectoralis major (clavicular head)",
+    "Joints Involved": "Shoulder"
+  },
+  {
+    "Group": "upperbody",
+    "Muscle Area Tag": "Shoulder posterior",
+    "Muscles Involved": "Posterior Deltoid, Teres major, Infraspinatus",
+    "Joints Involved": "Shoulder"
+  },
+  {
+    "Group": "upperbody",
+    "Muscle Area Tag": "Shoulder lateral",
+    "Muscles Involved": "Middle Deltoid, Supraspinatus",
+    "Joints Involved": "Shoulder"
+  },
+  {
+    "Group": "upperbody",
+    "Muscle Area Tag": "Chest",
+    "Muscles Involved": "Pectoralis major, Pectoralis minor, Serratus anterior",
+    "Joints Involved": "Shoulder"
+  },
+  {
+    "Group": "upperbody",
+    "Muscle Area Tag": "Upper arm anterior",
+    "Muscles Involved": "Biceps brachii, Brachialis, Coracobrachialis",
+    "Joints Involved": "Elbow, Shoulder"
+  },
+  {
+    "Group": "upperbody",
+    "Muscle Area Tag": "Upper arm posterior",
+    "Muscles Involved": "Triceps brachii (Long, Lateral, Medial heads)",
+    "Joints Involved": "Elbow, Shoulder"
+  },
+  {
+    "Group": "upperbody",
+    "Muscle Area Tag": "Forearm anterior",
+    "Muscles Involved": "Pronator teres, Flexor carpi radialis, Palmaris longus",
+    "Joints Involved": "Elbow, Wrist"
+  },
+  {
+    "Group": "upperbody",
+    "Muscle Area Tag": "Forearm posterior",
+    "Muscles Involved": "Brachioradialis, Extensor carpi radialis longus",
+    "Joints Involved": "Elbow, Wrist"
+  },
+  {
+    "Group": "upperbody",
+    "Muscle Area Tag": "Wrist flexors",
+    "Muscles Involved": "Flexor carpi radialis, Flexor carpi ulnaris",
+    "Joints Involved": "Wrist"
+  },
+  {
+    "Group": "upperbody",
+    "Muscle Area Tag": "Wrist extensors",
+    "Muscles Involved": "Extensor carpi radialis (longus/brevis), Extensor carpi ulnaris",
+    "Joints Involved": "Wrist"
+  },
+  {
+    "Group": "upperbody",
+    "Muscle Area Tag": "Neck anterior",
+    "Muscles Involved": "Sternocleidomastoid, Scalenes, Platysma",
+    "Joints Involved": "Cervical spine"
+  },
+  {
+    "Group": "trunk&core",
+    "Muscle Area Tag": "Abdominal - central",
+    "Muscles Involved": "Rectus abdominis",
+    "Joints Involved": "Lumbar spine, Thoracic spine"
+  },
+  {
+    "Group": "trunk&core",
+    "Muscle Area Tag": "Abdominal - lateral",
+    "Muscles Involved": "External oblique, Internal oblique, Transversus abdominis",
+    "Joints Involved": "Intervertebral, Pelvic tilt"
+  },
+  {
+    "Group": "trunk&core",
+    "Muscle Area Tag": "Spinal extensors middle",
+    "Muscles Involved": "Erector spinae (Thoracic region), Longissimus",
+    "Joints Involved": "Thoracic spine"
+  },
+  {
+    "Group": "trunk&core",
+    "Muscle Area Tag": "Spinal extensors lower",
+    "Muscles Involved": "Erector spinae (Lumbar region), Multifidus",
+    "Joints Involved": "Lumbar spine"
+  },
+  {
+    "Group": "lowerbody",
+    "Muscle Area Tag": "Gluteal - posterior",
+    "Muscles Involved": "Gluteus maximus",
+    "Joints Involved": "Hip"
+  },
+  {
+    "Group": "lowerbody",
+    "Muscle Area Tag": "Gluteals - lateral",
+    "Muscles Involved": "Gluteus medius, Gluteus minimus, Tensor fasciae latae",
+    "Joints Involved": "Hip"
+  },
+  {
+    "Group": "lowerbody",
+    "Muscle Area Tag": "Hip flexors",
+    "Muscles Involved": "Iliacus, Psoas major (Iliopsoas), Rectus femoris",
+    "Joints Involved": "Hip, Lumbar spine"
+  },
+  {
+    "Group": "lowerbody",
+    "Muscle Area Tag": "Quadriceps",
+    "Muscles Involved": "Rectus femoris, Vastus lateralis, Vastus medialis, Vastus intermedius",
+    "Joints Involved": "Knee, Hip"
+  },
+  {
+    "Group": "lowerbody",
+    "Muscle Area Tag": "Hamstrings",
+    "Muscles Involved": "Biceps femoris, Semitendinosus, Semimembranosus",
+    "Joints Involved": "Knee, Hip"
+  },
+  {
+    "Group": "lowerbody",
+    "Muscle Area Tag": "Adductors",
+    "Muscles Involved": "Adductor magnus, Adductor longus, Adductor brevis, Gracilis",
+    "Joints Involved": "Hip"
+  },
+  {
+    "Group": "lowerbody",
+    "Muscle Area Tag": "Calf",
+    "Muscles Involved": "Gastrocnemius, Soleus",
+    "Joints Involved": "Ankle, Knee, Midfoot, Toes"
+  },
+  {
+    "Group": "lowerbody",
+    "Muscle Area Tag": "Ankle evertors",
+    "Muscles Involved": "Peroneus longus, Peroneus brevis",
+    "Joints Involved": "Ankle, Midfoot, Toes"
+  },
+  {
+    "Group": "lowerbody",
+    "Muscle Area Tag": "Ankle invertors",
+    "Muscles Involved": "Tibialis anterior, Tibialis posterior",
+    "Joints Involved": "Ankle, Midfoot, Toes"
+  }
+]

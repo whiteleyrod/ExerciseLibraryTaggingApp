@@ -1,44 +1,69 @@
 # Exercise Tagging App
 
-Initial MVP scaffold for physiotherapist exercise tagging, based on `ExerciseTaggingAppProjectPlan.md`.
+Web application for physiotherapist exercise tagging with high-throughput workflows (search, multi-select, copy/paste semantics, and dockable pane layout).
 
-## What is implemented (MVP foundation)
+## Current Implementation Status (March 2026)
 
-- React + TypeScript web app scaffold in `web/`
-- Loads real data from:
-  - `web/public/ExerciseName_Link.csv`
-  - `web/public/TaggingCategories.csv`
-- Exercise library list with search and multi-select
-- Tag editor for:
-  - Muscle Area (SVG-based clickable map + manual fine-tune list)
-  - Planes of Movement (joint-row matrix)
-- Copy/Paste tagging with formal semantics:
-  - Global mode: `Replace` or `Merge`
-  - Field-level override: `Use global`, `Replace`, `Merge`
-  - Include toggles for Muscle Area and Planes Matrix
-- Canonical plane normalization (`Saggital` -> `Sagittal`)
-- Strict 1:1 muscle mapping bridge:
-  - `web/public/muscle_map.json` maps SVG ids to exact `TaggingCategories` values
-  - `web/public/muscle_map.svg` contains machine-readable clickable ids
-- Local persistence of tags in browser `localStorage`
+### Built and working
+- React + TypeScript SPA in `web/`.
+- Exercise loading and preview from `web/public/ExerciseName_Link.csv`.
+- Dockable pane system with draggable pane reordering, horizontal/vertical resize, reset, and presets.
+- 4-row layout (`2 / 3 / 4 / 3`) with vertical page scrolling to access lower panes.
+- Tagging panes for:
+  - Muscle area map + manual area selection
+  - Muscles involved (grouped from workbook)
+  - Joints pane + planes matrix
+  - Equipment (8 category groups from workbook)
+  - Body position (multi-select)
+  - Difficulty (slider)
+  - Level (multi-select, sourced from `TaggingCategories.csv` column `Level`)
+- Copy/paste workflow with merge/replace semantics and per-field includes.
+- Local persistence of tags in browser `localStorage`.
 
-## Mapping + workbook workflow
+### Data source model in use
+- Source CSVs/workbooks are authored at repo root.
+- Runtime app reads from `web/public/*` (served by Vite).
+- When source files are updated, sync/regenerate to `web/public` before testing.
 
-Run these whenever `TaggingCategories` muscle values change:
+## Data Files and Their Usage
+
+- `TaggingCategories.csv`
+  - Source-of-truth taxonomy for body position, difficulty, and level.
+  - Synced runtime copy: `web/public/TaggingCategories.csv`.
+- `Muscle, joint, area.xlsx`
+  - Source workbook for muscle area + grouped muscles/joints panes.
+  - Runtime outputs:
+    - `web/public/MuscleJointArea.csv`
+    - `web/public/MusclePaneGroups.csv`
+    - JSON mirrors of both files
+- `EquipmentTags.xlsx`
+  - Source workbook for equipment categories and item lists.
+  - Runtime outputs:
+    - `web/public/EquipmentTags.csv`
+    - `web/public/EquipmentTags.json`
+
+## Scripts
+
+Run from repo root:
 
 ```bash
-# From repo root
-.venv/Scripts/python.exe scripts/generate_muscle_map_assets.py
+.venv/Scripts/python.exe scripts/export_muscle_joint_area.py
 .venv/Scripts/python.exe scripts/validate_muscle_map.py
-.venv/Scripts/python.exe scripts/apply_workbook_validation.py
 ```
 
-What this does:
-- Regenerates SVG/JSON muscle map assets from taxonomy values
-- Verifies strict 1:1 mapping between SVG bridge and `TaggingCategories`
-- Applies Excel Data Validation dropdowns for `Muscle area` columns using named list `MuscleAreaList`
+`export_muscle_joint_area.py` now exports:
+- Muscle taxonomy/group assets from `Muscle, joint, area.xlsx`
+- Equipment assets from `EquipmentTags.xlsx`
 
-## Run locally
+`validate_muscle_map.py` verifies mapping consistency against current taxonomy.
+
+## UI / UX Notes
+
+- Pane drag/reorder is header-only, preventing accidental pane drag when interacting with controls (e.g., difficulty slider).
+- Joints pane layout responds to pane width (not only viewport width).
+- Row/column resizers rebalance remaining space across sibling panes.
+
+## Local Development
 
 ```bash
 cd web
@@ -46,40 +71,19 @@ npm install
 npm run dev
 ```
 
-Open the URL shown by Vite (usually `http://localhost:5173`).
+Open the Vite URL (usually `http://localhost:5173`).
 
-## Validate build
+## Build Validation
 
 ```bash
 cd web
 npm run build
 ```
 
-## Suggested next implementation steps
+## Remaining Major Roadmap Items
 
-1. Add backend API + database schema (`Exercise`, `TagDefinition`, `ExerciseTagValue`, `TagPasteOperation`, `AuditEvent`)
-2. Add auth + role-based permissions
-3. Add server-side validation + normalization service
-4. Add paste preview API and conflict handling
-5. Add audit history screens and export workflows
-
-## GitHub push
-
-If this folder is not yet connected to GitHub, run:
-
-```bash
-git init
-git add .
-git commit -m "Initial MVP scaffold for exercise tagging app"
-git branch -M main
-git remote add origin <YOUR_GITHUB_REPO_URL>
-git push -u origin main
-```
-
-If remote already exists, set/update as needed:
-
-```bash
-git remote -v
-git remote set-url origin <YOUR_GITHUB_REPO_URL>
-git push -u origin main
-```
+1. Backend API + database persistence layer
+2. Auth + role-based access control
+3. Server-side audit trail and history UI
+4. Conflict handling and robust multi-user concurrency
+5. Export/review workflows for production operations

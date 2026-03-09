@@ -61,9 +61,11 @@
   <rect id="muscle_hip_medial_rotators" class="muscle-zone" x="82" y="334" width="31" height="14" rx="4"><title>Hip medial rotators</title></rect>
   <rect id="muscle_adductors" class="muscle-zone" x="68" y="364" width="94" height="38" rx="10"><title>Adductors</title></rect>
   <rect id="muscle_quadriceps" class="muscle-zone" x="68" y="406" width="94" height="38" rx="10"><title>Quadriceps</title></rect>
-  <rect id="muscle_ankle_evertors" class="muscle-zone" x="64" y="460" width="49" height="38" rx="10"><title>Ankle evertors</title></rect>
-  <rect id="muscle_ankle_invertors" class="muscle-zone" x="117" y="460" width="49" height="38" rx="10"><title>Ankle invertors</title></rect>
-  <rect id="muscle_foot_intrinsics" class="muscle-zone" x="64" y="502" width="49" height="38" rx="10"><title>Foot intrinsics</title></rect>
+  <rect id="muscle_ankle_evertors" class="muscle-zone" x="64" y="460" width="49" height="24" rx="8"><title>Ankle evertors</title></rect>
+  <rect id="muscle_ankle_invertors" class="muscle-zone" x="117" y="460" width="49" height="24" rx="8"><title>Ankle invertors</title></rect>
+  <rect id="muscle_foot_intrinsics" class="muscle-zone" x="64" y="488" width="49" height="24" rx="8"><title>Foot intrinsics</title></rect>
+  <rect id="muscle_latissimus_dorsi" class="muscle-zone" x="117" y="488" width="49" height="24" rx="8"><title>Latissimus dorsi</title></rect>
+  <rect id="muscle_scapular_medial" class="muscle-zone" x="64" y="516" width="49" height="24" rx="8"><title>Scapular medial</title></rect>
   <rect id="muscle_neck_posterior" class="muscle-zone" x="412" y="86" width="46" height="22" rx="7"><title>Neck posterior</title></rect>
   <rect id="muscle_shoulder_posterior" class="muscle-zone" x="382" y="124" width="108" height="46" rx="10"><title>Shoulder posterior</title></rect>
   <rect id="muscle_spinal_extensors_lower" class="muscle-zone" x="402" y="186" width="66" height="28" rx="9"><title>Spinal extensors lower</title></rect>

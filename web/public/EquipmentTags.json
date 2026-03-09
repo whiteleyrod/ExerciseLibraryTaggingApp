@@ -1,0 +1,34 @@
+[
+  {
+    "Category": "Free Weights",
+    "Equipment Included": "Dumbbells, Barbells, Kettlebells, Weight Plates, EZ Curl Bar, Hex/Trap Bar"
+  },
+  {
+    "Category": "Machines",
+    "Equipment Included": "Lat Pulldown, Seated Row, Leg Press, Chest Press, Leg Extension, Cable Machine, Hamstring curl,"
+  },
+  {
+    "Category": "Functional & Suspension",
+    "Equipment Included": "TRX / Suspension Trainer, Battle Ropes, Sled, Pull-up Bar, Dip Station"
+  },
+  {
+    "Category": "Bodyweight & Mobility",
+    "Equipment Included": "Yoga Mat, Foam Roller, Parallettes, Ab Roller, Step Platform"
+  },
+  {
+    "Category": "Balance & Stability",
+    "Equipment Included": "BOSU Ball, Stability Ball (Swiss Ball), Balance Pad, Wobble Board, Agility Ladder"
+  },
+  {
+    "Category": "Resistance Tools",
+    "Equipment Included": "Resistance Bands (Loops/Long), Mini Bands, Resistance Tubes with Handles"
+  },
+  {
+    "Category": "Cardio Machines",
+    "Equipment Included": "Treadmill, Stationary Bike, Rowing Machine, Elliptical, Stair Climber, SkiErg"
+  },
+  {
+    "Category": "Benches & Racks",
+    "Equipment Included": "Adjustable Bench, Power Rack/Squat Cage, Smith Machine, Roman Chair (GHD)"
+  }
+]

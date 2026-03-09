@@ -163,6 +163,13 @@
       "region": "hip"
     },
     {
+      "id": "muscle_latissimus_dorsi",
+      "tag": "Latissimus dorsi",
+      "view": "front",
+      "panel": "front_body",
+      "region": "lower_leg_foot"
+    },
+    {
       "id": "muscle_neck_anterior",
       "tag": "Neck anterior",
       "view": "front",
@@ -189,6 +196,13 @@
       "view": "front",
       "panel": "front_body",
       "region": "thigh"
+    },
+    {
+      "id": "muscle_scapular_medial",
+      "tag": "Scapular medial",
+      "view": "front",
+      "panel": "front_body",
+      "region": "lower_leg_foot"
     },
     {
       "id": "muscle_shoulder_anterior",

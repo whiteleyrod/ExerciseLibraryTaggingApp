@@ -7,7 +7,7 @@ import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-TAXONOMY_CSV = ROOT / 'TaggingCategories.csv'
+TAXONOMY_CSV = ROOT / 'web' / 'public' / 'MuscleJointArea.csv'
 OUTPUT_JSON = ROOT / 'web' / 'public' / 'muscle_map.json'
 OUTPUT_SVG = ROOT / 'web' / 'public' / 'muscle_map.svg'
 

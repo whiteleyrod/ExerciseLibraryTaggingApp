@@ -1,0 +1,25 @@
+Group,Muscle Area Tag,Muscles Involved,Joints Involved
+upperbody,Shoulder anterior,"Anterior Deltoid, Pectoralis major (clavicular head)",Shoulder
+upperbody,Shoulder posterior,"Posterior Deltoid, Teres major, Infraspinatus",Shoulder
+upperbody,Shoulder lateral,"Middle Deltoid, Supraspinatus",Shoulder
+upperbody,Chest,"Pectoralis major, Pectoralis minor, Serratus anterior",Shoulder
+upperbody,Upper arm anterior,"Biceps brachii, Brachialis, Coracobrachialis","Elbow, Shoulder"
+upperbody,Upper arm posterior,"Triceps brachii (Long, Lateral, Medial heads)","Elbow, Shoulder"
+upperbody,Forearm anterior,"Pronator teres, Flexor carpi radialis, Palmaris longus","Elbow, Wrist"
+upperbody,Forearm posterior,"Brachioradialis, Extensor carpi radialis longus","Elbow, Wrist"
+upperbody,Wrist flexors,"Flexor carpi radialis, Flexor carpi ulnaris",Wrist
+upperbody,Wrist extensors,"Extensor carpi radialis (longus/brevis), Extensor carpi ulnaris",Wrist
+upperbody,Neck anterior,"Sternocleidomastoid, Scalenes, Platysma",Cervical spine
+trunk&core,Abdominal - central,Rectus abdominis,"Lumbar spine, Thoracic spine"
+trunk&core,Abdominal - lateral,"External oblique, Internal oblique, Transversus abdominis","Intervertebral, Pelvic tilt"
+trunk&core,Spinal extensors middle,"Erector spinae (Thoracic region), Longissimus",Thoracic spine
+trunk&core,Spinal extensors lower,"Erector spinae (Lumbar region), Multifidus",Lumbar spine
+lowerbody,Gluteal - posterior,Gluteus maximus,Hip
+lowerbody,Gluteals - lateral,"Gluteus medius, Gluteus minimus, Tensor fasciae latae",Hip
+lowerbody,Hip flexors,"Iliacus, Psoas major (Iliopsoas), Rectus femoris","Hip, Lumbar spine"
+lowerbody,Quadriceps,"Rectus femoris, Vastus lateralis, Vastus medialis, Vastus intermedius","Knee, Hip"
+lowerbody,Hamstrings,"Biceps femoris, Semitendinosus, Semimembranosus","Knee, Hip"
+lowerbody,Adductors,"Adductor magnus, Adductor longus, Adductor brevis, Gracilis",Hip
+lowerbody,Calf,"Gastrocnemius, Soleus","Ankle, Knee, Midfoot, Toes"
+lowerbody,Ankle evertors,"Peroneus longus, Peroneus brevis","Ankle, Midfoot, Toes"
+lowerbody,Ankle invertors,"Tibialis anterior, Tibialis posterior","Ankle, Midfoot, Toes"

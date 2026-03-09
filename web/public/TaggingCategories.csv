@@ -1,10 +1,10 @@
 ﻿Muscles involved,Joints involved,Muscle area,Streams,Equipment,Planes of movement Hip,Planes of movement knee,Planes of movement ankle,Planes of movement midfoot,Planes of movement toes,Planes of movement Shoulder,Planes of movement Elbow,Planes of movement Wrist,Planes of movement MCP,Planes of movement fingers,Planes of movement Cervical,Planes of movement Thoracic,Planes of movement Lumbar,Body position,Difficulty,Level,SBU
-Sternocleidomastoid,Cervical spine,Neck anterior,,Smith machine,Frontal,Frontal,Frontal,Frontal,Frontal,Frontal,Frontal,Frontal,Frontal,Frontal,Frontal,Frontal,Frontal,Standing,0,,Aspire
-Longus colli,Thoracic spine,Neck lateral,,Dumb bell,Saggital,Saggital,Saggital,Saggital,Saggital,Saggital,Saggital,Saggital,Saggital,Saggital,Saggital,Saggital,Saggital,Kneeling,1,,Aspetar
-Longus capitis,Upper thoracic spine,Neck posterior,,Barbell,Transverse,Transverse,Transverse,Transverse,Transverse,Transverse,Transverse,Transverse,Transverse,Transverse,Transverse,Transverse,Transverse,Supine,2,,
-rectus captis anterior,Mid thoracic spine,Shoulder anterior,,Kettlebell,,,,,,,,,,,,,,Prone,3,,
-rectus captis lateral,Lower thoracic spine,Shoulder posterior,,Exercise bike,,,,,,,,,,,,,,Crook Lying,4,,
-Scalenes,Lumbar spine,Shoulder lateral,,Treadmill,,,,,,,,,,,,,,Wide stance,5,,
+Sternocleidomastoid,Cervical spine,Neck anterior,,Smith machine,Frontal,Frontal,Frontal,Frontal,Frontal,Frontal,Frontal,Frontal,Frontal,Frontal,Frontal,Frontal,Frontal,Standing,0,Foundation,Aspire
+Longus colli,Thoracic spine,Neck lateral,,Dumb bell,Saggital,Saggital,Saggital,Saggital,Saggital,Saggital,Saggital,Saggital,Saggital,Saggital,Saggital,Saggital,Saggital,Kneeling,1,Reload,Aspetar
+Longus capitis,Upper thoracic spine,Neck posterior,,Barbell,Transverse,Transverse,Transverse,Transverse,Transverse,Transverse,Transverse,Transverse,Transverse,Transverse,Transverse,Transverse,Transverse,Supine,2,Accumulation,
+rectus captis anterior,Mid thoracic spine,Shoulder anterior,,Kettlebell,,,,,,,,,,,,,,Prone,3,Transition,
+rectus captis lateral,Lower thoracic spine,Shoulder posterior,,Exercise bike,,,,,,,,,,,,,,Crook Lying,4,Simulation,
+Scalenes,Lumbar spine,Shoulder lateral,,Treadmill,,,,,,,,,,,,,,Wide stance,5,Resilience,
 Levator scapulae,Shoulder,Chest,,Elliptical,,,,,,,,,,,,,,Narrow stance,6,,
 Upper trapezius,Elbow,Upper arm anterior,,Assault bike,,,,,,,,,,,,,,Split stance,7,,
 Middle trapezius,Wrist,Upper arm posterior,,Rower,,,,,,,,,,,,,,Leaning forward against wall,8,,
@@ -79,7 +79,7 @@ Psoas minor,,,,Weighted vest,,,,,,,,,,,,,,,,,
 Iliacus,,,,45 degree hip extension machine,,,,,,,,,,,,,,,,,
 Tensor fasciae latae,,,,Ab roller,,,,,,,,,,,,,,,,,
 Gluteus maximus,,,,Gymnastic rings,,,,,,,,,,,,,,,,,
-Gluteus medius,,,,,,,,,,,,,,,,,,,,,
+Gluteus medius,,,,Cuff weights,,,,,,,,,,,,,,,,,
 Gluteus minimus,,,,,,,,,,,,,,,,,,,,,
 Piriformis,,,,,,,,,,,,,,,,,,,,,
 Obturator internus,,,,,,,,,,,,,,,,,,,,,

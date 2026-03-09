@@ -1,0 +1,607 @@
+[
+  {
+    "Muscles involved": "Sternocleidomastoid",
+    "Joints involved": "Cervical spine",
+    "Muscle area": "Neck anterior"
+  },
+  {
+    "Muscles involved": "Longus colli",
+    "Joints involved": "Thoracic spine",
+    "Muscle area": "Neck lateral"
+  },
+  {
+    "Muscles involved": "Longus capitis",
+    "Joints involved": "Upper thoracic spine",
+    "Muscle area": "Neck posterior"
+  },
+  {
+    "Muscles involved": "rectus captis anterior",
+    "Joints involved": "Mid thoracic spine",
+    "Muscle area": "Shoulder anterior"
+  },
+  {
+    "Muscles involved": "rectus captis lateral",
+    "Joints involved": "Lower thoracic spine",
+    "Muscle area": "Shoulder posterior"
+  },
+  {
+    "Muscles involved": "Scalenes",
+    "Joints involved": "Lumbar spine",
+    "Muscle area": "Shoulder lateral"
+  },
+  {
+    "Muscles involved": "Levator scapulae",
+    "Joints involved": "Shoulder",
+    "Muscle area": "Chest"
+  },
+  {
+    "Muscles involved": "Upper trapezius",
+    "Joints involved": "Elbow",
+    "Muscle area": "Upper arm anterior"
+  },
+  {
+    "Muscles involved": "Middle trapezius",
+    "Joints involved": "Wrist",
+    "Muscle area": "Upper arm posterior"
+  },
+  {
+    "Muscles involved": "Lower trapezius",
+    "Joints involved": "Thumb",
+    "Muscle area": "Forearm anterior"
+  },
+  {
+    "Muscles involved": "Rhomboids",
+    "Joints involved": "Finger",
+    "Muscle area": "Forearm posterior"
+  },
+  {
+    "Muscles involved": "Serratus anterior",
+    "Joints involved": "Metacarpophalangeal",
+    "Muscle area": "Wrist flexors"
+  },
+  {
+    "Muscles involved": "Rectus abdominus",
+    "Joints involved": "Proximal interpahalangeal",
+    "Muscle area": "Wrist extensors"
+  },
+  {
+    "Muscles involved": "External abdominal oblique",
+    "Joints involved": "Distal interpahalngeal",
+    "Muscle area": "Wrist ulnar deviators"
+  },
+  {
+    "Muscles involved": "Internal abdominal oblique",
+    "Joints involved": "Hip",
+    "Muscle area": "Wrist radial deviators"
+  },
+  {
+    "Muscles involved": "Transversus abdominus",
+    "Joints involved": "Knee",
+    "Muscle area": "Forearm pronators"
+  },
+  {
+    "Muscles involved": "Pyramidalis",
+    "Joints involved": "Ankle",
+    "Muscle area": "Forearm supinators"
+  },
+  {
+    "Muscles involved": "Quadratus lumborum",
+    "Joints involved": "Sub-talar",
+    "Muscle area": "Finger flexors"
+  },
+  {
+    "Muscles involved": "Iliocostalis lumborum",
+    "Joints involved": "Midfoot",
+    "Muscle area": "Finger extensors"
+  },
+  {
+    "Muscles involved": "Iliocostalis thoracic",
+    "Joints involved": "Tarso-metatarsal",
+    "Muscle area": "Finger abductors"
+  },
+  {
+    "Muscles involved": "Iliocostalis capitus",
+    "Joints involved": "",
+    "Muscle area": "Finger adductors"
+  },
+  {
+    "Muscles involved": "Longissimuss colli",
+    "Joints involved": "",
+    "Muscle area": "Thumb flexors"
+  },
+  {
+    "Muscles involved": "Longissimuss thoracis",
+    "Joints involved": "",
+    "Muscle area": "Thumb extensors"
+  },
+  {
+    "Muscles involved": "Longissimuss thoracis pars lumborum",
+    "Joints involved": "",
+    "Muscle area": "Thumb adductors"
+  },
+  {
+    "Muscles involved": "Spinalis capitus",
+    "Joints involved": "",
+    "Muscle area": "Thumb Abductors"
+  },
+  {
+    "Muscles involved": "Spinalis colli",
+    "Joints involved": "",
+    "Muscle area": "Abdominal - central"
+  },
+  {
+    "Muscles involved": "Spinalis thoracis",
+    "Joints involved": "",
+    "Muscle area": "Abdominal - lateral"
+  },
+  {
+    "Muscles involved": "Multifidus lumborum",
+    "Joints involved": "",
+    "Muscle area": "Spinal extensors middle"
+  },
+  {
+    "Muscles involved": "Multifidus thoracis",
+    "Joints involved": "",
+    "Muscle area": "Spinal extensors lower"
+  },
+  {
+    "Muscles involved": "Multifidus colli",
+    "Joints involved": "",
+    "Muscle area": "Gluteal - posterior"
+  },
+  {
+    "Muscles involved": "Rotatores long 1-11",
+    "Joints involved": "",
+    "Muscle area": "Gluteals - lateral"
+  },
+  {
+    "Muscles involved": "Rotatores short 1-11",
+    "Joints involved": "",
+    "Muscle area": "Hip flexors"
+  },
+  {
+    "Muscles involved": "Rotatores lumborum",
+    "Joints involved": "",
+    "Muscle area": "Hip lateral rotators"
+  },
+  {
+    "Muscles involved": "Rotatores colli",
+    "Joints involved": "",
+    "Muscle area": "Hip medial rotators"
+  },
+  {
+    "Muscles involved": "Levator costorum",
+    "Joints involved": "",
+    "Muscle area": "Adductors"
+  },
+  {
+    "Muscles involved": "Serratus posterior inferior",
+    "Joints involved": "",
+    "Muscle area": "Hamstrings"
+  },
+  {
+    "Muscles involved": "Serratus posterior superior",
+    "Joints involved": "",
+    "Muscle area": "Quadriceps"
+  },
+  {
+    "Muscles involved": "Pectoralis major",
+    "Joints involved": "",
+    "Muscle area": "Foot and toe extensors"
+  },
+  {
+    "Muscles involved": "Pectoralis minor",
+    "Joints involved": "",
+    "Muscle area": "Calf"
+  },
+  {
+    "Muscles involved": "Subclavius",
+    "Joints involved": "",
+    "Muscle area": "Foot intrinsics"
+  },
+  {
+    "Muscles involved": "Deltoid anterior",
+    "Joints involved": "",
+    "Muscle area": "Ankle evertors"
+  },
+  {
+    "Muscles involved": "Deltoid middle",
+    "Joints involved": "",
+    "Muscle area": "Ankle invertors"
+  },
+  {
+    "Muscles involved": "Deltoid posterior",
+    "Joints involved": "",
+    "Muscle area": "Scapular medial"
+  },
+  {
+    "Muscles involved": "Teres major",
+    "Joints involved": "",
+    "Muscle area": "Latissimus dorsi"
+  },
+  {
+    "Muscles involved": "Teres minor",
+    "Joints involved": "",
+    "Muscle area": ""
+  },
+  {
+    "Muscles involved": "Infraspinatus",
+    "Joints involved": "",
+    "Muscle area": ""
+  },
+  {
+    "Muscles involved": "Supraspinatus",
+    "Joints involved": "",
+    "Muscle area": ""
+  },
+  {
+    "Muscles involved": "Subscapularis",
+    "Joints involved": "",
+    "Muscle area": ""
+  },
+  {
+    "Muscles involved": "Biceps brachii",
+    "Joints involved": "",
+    "Muscle area": ""
+  },
+  {
+    "Muscles involved": "Brachialis",
+    "Joints involved": "",
+    "Muscle area": ""
+  },
+  {
+    "Muscles involved": "Triceps brachii",
+    "Joints involved": "",
+    "Muscle area": ""
+  },
+  {
+    "Muscles involved": "Anconeus",
+    "Joints involved": "",
+    "Muscle area": ""
+  },
+  {
+    "Muscles involved": "Pronator teres",
+    "Joints involved": "",
+    "Muscle area": ""
+  },
+  {
+    "Muscles involved": "Flexor carpi radialis",
+    "Joints involved": "",
+    "Muscle area": ""
+  },
+  {
+    "Muscles involved": "Palmaris longus",
+    "Joints involved": "",
+    "Muscle area": ""
+  },
+  {
+    "Muscles involved": "Flexor carpi ulnaris",
+    "Joints involved": "",
+    "Muscle area": ""
+  },
+  {
+    "Muscles involved": "Flexor digitorum profundus",
+    "Joints involved": "",
+    "Muscle area": ""
+  },
+  {
+    "Muscles involved": "Flexor digitorum superficialis",
+    "Joints involved": "",
+    "Muscle area": ""
+  },
+  {
+    "Muscles involved": "Flexor pollicis longus",
+    "Joints involved": "",
+    "Muscle area": ""
+  },
+  {
+    "Muscles involved": "Extensor digitorum",
+    "Joints involved": "",
+    "Muscle area": ""
+  },
+  {
+    "Muscles involved": "Extensor digiti minimi",
+    "Joints involved": "",
+    "Muscle area": ""
+  },
+  {
+    "Muscles involved": "Extensor carpi ulnaris",
+    "Joints involved": "",
+    "Muscle area": ""
+  },
+  {
+    "Muscles involved": "Extensor carpi radialis longus",
+    "Joints involved": "",
+    "Muscle area": ""
+  },
+  {
+    "Muscles involved": "Extensor carpi radialis brevis",
+    "Joints involved": "",
+    "Muscle area": ""
+  },
+  {
+    "Muscles involved": "Supinator",
+    "Joints involved": "",
+    "Muscle area": ""
+  },
+  {
+    "Muscles involved": "Extensor indicis",
+    "Joints involved": "",
+    "Muscle area": ""
+  },
+  {
+    "Muscles involved": "Abductor pollicis brevis",
+    "Joints involved": "",
+    "Muscle area": ""
+  },
+  {
+    "Muscles involved": "Abductor pollicis longus",
+    "Joints involved": "",
+    "Muscle area": ""
+  },
+  {
+    "Muscles involved": "Extensor pollicis longus",
+    "Joints involved": "",
+    "Muscle area": ""
+  },
+  {
+    "Muscles involved": "Opponens pollicis",
+    "Joints involved": "",
+    "Muscle area": ""
+  },
+  {
+    "Muscles involved": "Flexor pollicis brevis",
+    "Joints involved": "",
+    "Muscle area": ""
+  },
+  {
+    "Muscles involved": "Abductor digiti minimi (hand)",
+    "Joints involved": "",
+    "Muscle area": ""
+  },
+  {
+    "Muscles involved": "Lumbricales of the hand 1-4",
+    "Joints involved": "",
+    "Muscle area": ""
+  },
+  {
+    "Muscles involved": "Dorsal interossei hand 1-4",
+    "Joints involved": "",
+    "Muscle area": ""
+  },
+  {
+    "Muscles involved": "Palmar interossei hand 1-3",
+    "Joints involved": "",
+    "Muscle area": ""
+  },
+  {
+    "Muscles involved": "Psoas major",
+    "Joints involved": "",
+    "Muscle area": ""
+  },
+  {
+    "Muscles involved": "Psoas minor",
+    "Joints involved": "",
+    "Muscle area": ""
+  },
+  {
+    "Muscles involved": "Iliacus",
+    "Joints involved": "",
+    "Muscle area": ""
+  },
+  {
+    "Muscles involved": "Tensor fasciae latae",
+    "Joints involved": "",
+    "Muscle area": ""
+  },
+  {
+    "Muscles involved": "Gluteus maximus",
+    "Joints involved": "",
+    "Muscle area": ""
+  },
+  {
+    "Muscles involved": "Gluteus medius",
+    "Joints involved": "",
+    "Muscle area": ""
+  },
+  {
+    "Muscles involved": "Gluteus minimus",
+    "Joints involved": "",
+    "Muscle area": ""
+  },
+  {
+    "Muscles involved": "Piriformis",
+    "Joints involved": "",
+    "Muscle area": ""
+  },
+  {
+    "Muscles involved": "Obturator internus",
+    "Joints involved": "",
+    "Muscle area": ""
+  },
+  {
+    "Muscles involved": "Obturator externus",
+    "Joints involved": "",
+    "Muscle area": ""
+  },
+  {
+    "Muscles involved": "Gemellus inferior",
+    "Joints involved": "",
+    "Muscle area": ""
+  },
+  {
+    "Muscles involved": "Gemellus superior",
+    "Joints involved": "",
+    "Muscle area": ""
+  },
+  {
+    "Muscles involved": "Quadratus femoris",
+    "Joints involved": "",
+    "Muscle area": ""
+  },
+  {
+    "Muscles involved": "Vastus lateralis",
+    "Joints involved": "",
+    "Muscle area": ""
+  },
+  {
+    "Muscles involved": "Vastus medialis",
+    "Joints involved": "",
+    "Muscle area": ""
+  },
+  {
+    "Muscles involved": "Vastus intermedius",
+    "Joints involved": "",
+    "Muscle area": ""
+  },
+  {
+    "Muscles involved": "Rectus femoris",
+    "Joints involved": "",
+    "Muscle area": ""
+  },
+  {
+    "Muscles involved": "Biceps femoris",
+    "Joints involved": "",
+    "Muscle area": ""
+  },
+  {
+    "Muscles involved": "Semitendinosus",
+    "Joints involved": "",
+    "Muscle area": ""
+  },
+  {
+    "Muscles involved": "Semimembranosus",
+    "Joints involved": "",
+    "Muscle area": ""
+  },
+  {
+    "Muscles involved": "Gracilis",
+    "Joints involved": "",
+    "Muscle area": ""
+  },
+  {
+    "Muscles involved": "Adductor brevis",
+    "Joints involved": "",
+    "Muscle area": ""
+  },
+  {
+    "Muscles involved": "Adductor longus",
+    "Joints involved": "",
+    "Muscle area": ""
+  },
+  {
+    "Muscles involved": "Adductor magnus - adductor part",
+    "Joints involved": "",
+    "Muscle area": ""
+  },
+  {
+    "Muscles involved": "Adductor magnus - ischiocondylar part",
+    "Joints involved": "",
+    "Muscle area": ""
+  },
+  {
+    "Muscles involved": "Tibialis anterior",
+    "Joints involved": "",
+    "Muscle area": ""
+  },
+  {
+    "Muscles involved": "Extensor hallucis longus",
+    "Joints involved": "",
+    "Muscle area": ""
+  },
+  {
+    "Muscles involved": "Extensor digitorum longus",
+    "Joints involved": "",
+    "Muscle area": ""
+  },
+  {
+    "Muscles involved": "Peroneus tertius",
+    "Joints involved": "",
+    "Muscle area": ""
+  },
+  {
+    "Muscles involved": "Peroneus longus",
+    "Joints involved": "",
+    "Muscle area": ""
+  },
+  {
+    "Muscles involved": "Peroneus brevis",
+    "Joints involved": "",
+    "Muscle area": ""
+  },
+  {
+    "Muscles involved": "Tibialis posterior",
+    "Joints involved": "",
+    "Muscle area": ""
+  },
+  {
+    "Muscles involved": "Extensor digitorum brevis",
+    "Joints involved": "",
+    "Muscle area": ""
+  },
+  {
+    "Muscles involved": "Extensor hallucis brevis",
+    "Joints involved": "",
+    "Muscle area": ""
+  },
+  {
+    "Muscles involved": "Dorsal interossei foot 1-4",
+    "Joints involved": "",
+    "Muscle area": ""
+  },
+  {
+    "Muscles involved": "Abductor hallucis",
+    "Joints involved": "",
+    "Muscle area": ""
+  },
+  {
+    "Muscles involved": "flexor digitorum brevis",
+    "Joints involved": "",
+    "Muscle area": ""
+  },
+  {
+    "Muscles involved": "Abductor digiti minimi (foot)",
+    "Joints involved": "",
+    "Muscle area": ""
+  },
+  {
+    "Muscles involved": "Abductor of fifth metatarsal",
+    "Joints involved": "",
+    "Muscle area": ""
+  },
+  {
+    "Muscles involved": "Quadratus plantae",
+    "Joints involved": "",
+    "Muscle area": ""
+  },
+  {
+    "Muscles involved": "Lumbricales of the foot 1-4",
+    "Joints involved": "",
+    "Muscle area": ""
+  },
+  {
+    "Muscles involved": "Flexor hallucis brevis",
+    "Joints involved": "",
+    "Muscle area": ""
+  },
+  {
+    "Muscles involved": "Adductor hallucis",
+    "Joints involved": "",
+    "Muscle area": ""
+  },
+  {
+    "Muscles involved": "Flexor digiti minimi brevis (foot)",
+    "Joints involved": "",
+    "Muscle area": ""
+  },
+  {
+    "Muscles involved": "Opponens digiti minimi (foot)",
+    "Joints involved": "",
+    "Muscle area": ""
+  },
+  {
+    "Muscles involved": "Plantar interossei 1-3",
+    "Joints involved": "",
+    "Muscle area": ""
+  }
+]

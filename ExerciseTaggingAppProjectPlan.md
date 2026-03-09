@@ -1,5 +1,53 @@
 # Exercise Tagging App – Project Plan
 
+## 0) Implementation Progress Snapshot (March 2026)
+
+This section reflects actual delivery status to date.
+
+### 0.1 Completed
+- Frontend application implemented in React + TypeScript (`web/`).
+- Exercise loading + preview from `ExerciseName_Link.csv`.
+- Dockable pane architecture delivered:
+	- Draggable pane reordering.
+	- Horizontal and vertical pane resizing.
+	- Layout reset + presets.
+	- 4-row layout (`2 / 3 / 4 / 3`) with vertical page scroll.
+- Muscle tagging delivered:
+	- SVG clickable front/back muscle maps.
+	- Mapping via `muscle_selector_map.json` and fallback resolver.
+	- Grouped muscles pane sourced from workbook exports.
+- Joints/planes tagging delivered:
+	- Clickable joints SVG + plane selection.
+	- Planes matrix controls.
+- Equipment tagging delivered:
+	- Grouped category pane from `EquipmentTags.xlsx` export.
+- Additional taxonomy panes delivered:
+	- Body position (multi-select).
+	- Difficulty slider.
+	- Level (multi-select, from `TaggingCategories.csv` column `Level`).
+- Copy/paste semantics delivered in-app with merge/replace behavior and include toggles.
+- Local storage persistence implemented for per-exercise tag state.
+
+### 0.2 In Progress / Partially Delivered
+- Copy/paste controls currently fully configured for core fields; fine-grained controls for every new field can be expanded further if required.
+- Data governance is file-driven and manual-sync based (root source files -> `web/public` runtime copies).
+
+### 0.3 Not Yet Delivered (Planned)
+- Backend API and persistent database model.
+- Authentication and role-based access control.
+- Immutable server-side audit/event history.
+- Multi-user conflict resolution with optimistic locking at API layer.
+- Reviewer/admin workflows beyond local MVP operations.
+
+### 0.4 Active Source-of-Truth Files
+- `TaggingCategories.csv` (body position, difficulty, level, etc.).
+- `Muscle, joint, area.xlsx` (muscle/joint taxonomy and grouped pane data).
+- `EquipmentTags.xlsx` (equipment category data).
+
+### 0.5 Operational Note
+- Browser app reads runtime assets from `web/public/*`.
+- Any source file refresh must be synced/exported to `web/public` before validation.
+
 ## 1) Purpose
 
 Build a web app for physiotherapists to efficiently tag exercises in the exercise library, with a core focus on speed, consistency, and quality at scale.
