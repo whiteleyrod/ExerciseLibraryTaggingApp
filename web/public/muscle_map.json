@@ -4,212 +4,296 @@
     {
       "id": "muscle_abdominal_central",
       "tag": "Abdominal - central",
-      "view": "front"
+      "view": "front",
+      "panel": "front_body",
+      "region": "abdomen"
     },
     {
       "id": "muscle_abdominal_lateral",
       "tag": "Abdominal - lateral",
-      "view": "front"
+      "view": "front",
+      "panel": "front_body",
+      "region": "abdomen"
     },
     {
       "id": "muscle_adductors",
       "tag": "Adductors",
-      "view": "front"
+      "view": "front",
+      "panel": "front_body",
+      "region": "thigh"
     },
     {
       "id": "muscle_ankle_evertors",
       "tag": "Ankle evertors",
-      "view": "front"
+      "view": "front",
+      "panel": "front_body",
+      "region": "lower_leg_foot"
     },
     {
       "id": "muscle_ankle_invertors",
       "tag": "Ankle invertors",
-      "view": "front"
+      "view": "front",
+      "panel": "front_body",
+      "region": "lower_leg_foot"
     },
     {
       "id": "muscle_calf",
       "tag": "Calf",
-      "view": "back"
+      "view": "back",
+      "panel": "back_body",
+      "region": "calf_foot"
     },
     {
       "id": "muscle_chest",
       "tag": "Chest",
-      "view": "front"
+      "view": "front",
+      "panel": "front_body",
+      "region": "shoulder_chest"
     },
     {
       "id": "muscle_finger_abductors",
       "tag": "Finger abductors",
-      "view": "front"
+      "view": "front",
+      "panel": "front_hand",
+      "region": "fingers"
     },
     {
       "id": "muscle_finger_adductors",
       "tag": "Finger adductors",
-      "view": "front"
+      "view": "front",
+      "panel": "front_hand",
+      "region": "fingers"
     },
     {
       "id": "muscle_finger_extensors",
       "tag": "Finger extensors",
-      "view": "back"
+      "view": "back",
+      "panel": "back_hand",
+      "region": "fingers"
     },
     {
       "id": "muscle_finger_flexors",
       "tag": "Finger flexors",
-      "view": "front"
+      "view": "front",
+      "panel": "front_hand",
+      "region": "fingers"
     },
     {
       "id": "muscle_foot_and_toe_extensors",
       "tag": "Foot and toe extensors",
-      "view": "back"
+      "view": "back",
+      "panel": "back_body",
+      "region": "calf_foot"
     },
     {
       "id": "muscle_foot_intrinsics",
       "tag": "Foot intrinsics",
-      "view": "front"
+      "view": "front",
+      "panel": "front_body",
+      "region": "lower_leg_foot"
     },
     {
       "id": "muscle_forearm_anterior",
       "tag": "Forearm anterior",
-      "view": "front"
+      "view": "front",
+      "panel": "front_hand",
+      "region": "forearm"
     },
     {
       "id": "muscle_forearm_posterior",
       "tag": "Forearm posterior",
-      "view": "back"
+      "view": "back",
+      "panel": "back_hand",
+      "region": "forearm"
     },
     {
       "id": "muscle_forearm_pronators",
       "tag": "Forearm pronators",
-      "view": "front"
+      "view": "front",
+      "panel": "front_hand",
+      "region": "forearm"
     },
     {
       "id": "muscle_forearm_supinators",
       "tag": "Forearm supinators",
-      "view": "front"
+      "view": "front",
+      "panel": "front_hand",
+      "region": "forearm"
     },
     {
       "id": "muscle_gluteal_posterior",
       "tag": "Gluteal - posterior",
-      "view": "back"
+      "view": "back",
+      "panel": "back_body",
+      "region": "glute_hip"
     },
     {
       "id": "muscle_gluteals_lateral",
       "tag": "Gluteals - lateral",
-      "view": "back"
+      "view": "back",
+      "panel": "back_body",
+      "region": "glute_hip"
     },
     {
       "id": "muscle_hamstrings",
       "tag": "Hamstrings",
-      "view": "back"
+      "view": "back",
+      "panel": "back_body",
+      "region": "hamstring_thigh"
     },
     {
       "id": "muscle_hip_flexors",
       "tag": "Hip flexors",
-      "view": "front"
+      "view": "front",
+      "panel": "front_body",
+      "region": "hip"
     },
     {
       "id": "muscle_hip_lateral_rotators",
       "tag": "Hip lateral rotators",
-      "view": "front"
+      "view": "front",
+      "panel": "front_body",
+      "region": "hip"
     },
     {
       "id": "muscle_hip_medial_rotators",
       "tag": "Hip medial rotators",
-      "view": "front"
+      "view": "front",
+      "panel": "front_body",
+      "region": "hip"
     },
     {
       "id": "muscle_neck_anterior",
       "tag": "Neck anterior",
-      "view": "front"
+      "view": "front",
+      "panel": "front_body",
+      "region": "neck"
     },
     {
       "id": "muscle_neck_lateral",
       "tag": "Neck lateral",
-      "view": "front"
+      "view": "front",
+      "panel": "front_body",
+      "region": "neck"
     },
     {
       "id": "muscle_neck_posterior",
       "tag": "Neck posterior",
-      "view": "back"
+      "view": "back",
+      "panel": "back_body",
+      "region": "neck"
     },
     {
       "id": "muscle_quadriceps",
       "tag": "Quadriceps",
-      "view": "front"
+      "view": "front",
+      "panel": "front_body",
+      "region": "thigh"
     },
     {
       "id": "muscle_shoulder_anterior",
       "tag": "Shoulder anterior",
-      "view": "front"
+      "view": "front",
+      "panel": "front_body",
+      "region": "shoulder_chest"
     },
     {
       "id": "muscle_shoulder_lateral",
       "tag": "Shoulder lateral",
-      "view": "front"
+      "view": "front",
+      "panel": "front_body",
+      "region": "shoulder_chest"
     },
     {
       "id": "muscle_shoulder_posterior",
       "tag": "Shoulder posterior",
-      "view": "back"
+      "view": "back",
+      "panel": "back_body",
+      "region": "back_upper"
     },
     {
       "id": "muscle_spinal_extensors_lower",
       "tag": "Spinal extensors lower",
-      "view": "back"
+      "view": "back",
+      "panel": "back_body",
+      "region": "back_mid"
     },
     {
       "id": "muscle_spinal_extensors_middle",
       "tag": "Spinal extensors middle",
-      "view": "back"
+      "view": "back",
+      "panel": "back_body",
+      "region": "back_mid"
     },
     {
       "id": "muscle_thumb_abductors",
       "tag": "Thumb Abductors",
-      "view": "front"
+      "view": "front",
+      "panel": "front_hand",
+      "region": "thumb"
     },
     {
       "id": "muscle_thumb_adductors",
       "tag": "Thumb adductors",
-      "view": "front"
+      "view": "front",
+      "panel": "front_hand",
+      "region": "thumb"
     },
     {
       "id": "muscle_thumb_extensors",
       "tag": "Thumb extensors",
-      "view": "back"
+      "view": "back",
+      "panel": "back_hand",
+      "region": "thumb"
     },
     {
       "id": "muscle_thumb_flexors",
       "tag": "Thumb flexors",
-      "view": "front"
+      "view": "front",
+      "panel": "front_hand",
+      "region": "thumb"
     },
     {
       "id": "muscle_upper_arm_anterior",
       "tag": "Upper arm anterior",
-      "view": "front"
+      "view": "front",
+      "panel": "front_body",
+      "region": "upper_arm"
     },
     {
       "id": "muscle_upper_arm_posterior",
       "tag": "Upper arm posterior",
-      "view": "back"
+      "view": "back",
+      "panel": "back_body",
+      "region": "upper_arm"
     },
     {
       "id": "muscle_wrist_extensors",
       "tag": "Wrist extensors",
-      "view": "back"
+      "view": "back",
+      "panel": "back_hand",
+      "region": "wrist"
     },
     {
       "id": "muscle_wrist_flexors",
       "tag": "Wrist flexors",
-      "view": "front"
+      "view": "front",
+      "panel": "front_hand",
+      "region": "wrist"
     },
     {
       "id": "muscle_wrist_radial_deviators",
       "tag": "Wrist radial deviators",
-      "view": "front"
+      "view": "front",
+      "panel": "front_hand",
+      "region": "wrist"
     },
     {
       "id": "muscle_wrist_ulnar_deviators",
       "tag": "Wrist ulnar deviators",
-      "view": "front"
+      "view": "front",
+      "panel": "front_hand",
+      "region": "wrist"
     }
   ]
 }

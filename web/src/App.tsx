@@ -70,6 +70,23 @@ const ALIAS_MAP: Record<string, string> = {
 
 const STORAGE_KEY = 'exercise-tagging-app-tags-v1'
 
+const JOINT_LABEL_TO_ROW: Record<string, JointRow> = {
+  hip: 'Hip',
+  knee: 'Knee',
+  ankle: 'Ankle',
+  midfoot: 'Midfoot',
+  toes: 'Toes',
+  shoulder: 'Shoulder',
+  elbow: 'Elbow',
+  wrist: 'Wrist',
+  metacarpophalangeal: 'MCP',
+  finger: 'Fingers',
+  fingers: 'Fingers',
+  cervical_spine: 'Cervical',
+  thoracic_spine: 'Thoracic',
+  lumbar_spine: 'Lumbar',
+}
+
 const createEmptyTags = (): TagState => ({
   muscleAreas: [],
   planes: JOINT_ROWS.reduce(
@@ -87,6 +104,27 @@ const normalizePlane = (value: string): Plane | null => {
 }
 
 const uniqueSorted = (values: string[]): string[] => [...new Set(values)].sort((a, b) => a.localeCompare(b))
+
+const normalizeLookupValue = (value: string): string =>
+  value
+    .trim()
+    .toLowerCase()
+    .replace(/[_-]+/g, ' ')
+    .replace(/\s+/g, ' ')
+
+const formatSourceIdForTooltip = (value: string): string => {
+  const cleaned = value
+    .trim()
+    .toLowerCase()
+    .replace(/-\d+$/g, '')
+    .replace(/[_-]+/g, ' ')
+    .replace(/\s+/g, ' ')
+  if (!cleaned) {
+    return ''
+  }
+
+  return cleaned.replace(/(^|\s)([a-z])/g, (_full, lead: string, letter: string) => `${lead}${letter.toUpperCase()}`)
+}
 
 const parseCsv = async <T extends Record<string, string>>(url: string): Promise<T[]> => {
   const response = await fetch(url)
@@ -109,6 +147,72 @@ async function parseJson<T>(url: string): Promise<T> {
   return (await response.json()) as T
 }
 
+const prepareSelectorSvg = (markup: string, view: 'front' | 'back'): string => {
+  const parser = new DOMParser()
+  const documentNode = parser.parseFromString(markup, 'image/svg+xml')
+  const svg = documentNode.documentElement
+  svg.setAttribute('data-view', view)
+  const excludedLabels = new Set(['background', 'front', 'back', 'back_superficial'])
+
+  documentNode.querySelectorAll('g').forEach((group) => {
+    const labelValue = group.getAttribute('inkscape:label') ?? ''
+    const normalizedLabel = labelValue
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '_')
+      .replace(/^_+|_+$/g, '')
+
+    const identifier = group.getAttribute('id') ?? ''
+    const sourceId = normalizedLabel && !normalizedLabel.startsWith('layer') ? normalizedLabel : identifier
+    if (!sourceId) {
+      return
+    }
+
+    const isMuscleGroup =
+      group.classList.contains('muscle') ||
+      (normalizedLabel.length > 0 && !normalizedLabel.startsWith('layer') && !excludedLabels.has(normalizedLabel))
+    if (!isMuscleGroup) {
+      return
+    }
+
+    group.classList.add('muscle')
+    group.setAttribute('data-source-id', sourceId)
+    group.setAttribute('data-map-key', `${view}:${sourceId}`)
+  })
+
+  return new XMLSerializer().serializeToString(documentNode)
+}
+
+const prepareJointsSvg = (markup: string): string => {
+  const parser = new DOMParser()
+  const documentNode = parser.parseFromString(markup, 'image/svg+xml')
+  const svg = documentNode.documentElement
+  svg.setAttribute('data-view', 'joints')
+
+  documentNode.querySelectorAll('g').forEach((group) => {
+    const labelValue = group.getAttribute('inkscape:label') ?? ''
+    const normalizedLabel = labelValue
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '_')
+      .replace(/^_+|_+$/g, '')
+
+    if (!normalizedLabel || normalizedLabel === 'scaffold' || normalizedLabel === 'skeleton') {
+      return
+    }
+
+    const mappedRow = JOINT_LABEL_TO_ROW[normalizedLabel]
+    if (!mappedRow) {
+      return
+    }
+
+    group.classList.add('joint-zone')
+    group.setAttribute('data-joint-row', mappedRow)
+  })
+
+  return new XMLSerializer().serializeToString(documentNode)
+}
+
 const isLikelyVideoLink = (value: string): boolean => {
   const link = value.toLowerCase()
   return link.includes('.mp4') || link.includes('.mov') || link.includes('.m4v') || link.includes('.webm')
@@ -116,13 +220,16 @@ const isLikelyVideoLink = (value: string): boolean => {
 
 function App() {
   const muscleMapRef = useRef<HTMLDivElement | null>(null)
+  const jointsMapRef = useRef<HTMLDivElement | null>(null)
 
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [exercises, setExercises] = useState<Exercise[]>([])
   const [muscleAreaOptions, setMuscleAreaOptions] = useState<string[]>([])
   const [muscleMap, setMuscleMap] = useState<MuscleMapPayload>({ version: 1, entries: [] })
-  const [muscleSvgMarkup, setMuscleSvgMarkup] = useState('')
+  const [frontMuscleSvg, setFrontMuscleSvg] = useState('')
+  const [backMuscleSvg, setBackMuscleSvg] = useState('')
+  const [jointsSvg, setJointsSvg] = useState('')
   const [tagsByExercise, setTagsByExercise] = useState<Record<string, TagState>>({})
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
@@ -134,18 +241,43 @@ function App() {
   const [includePlanes, setIncludePlanes] = useState(true)
   const [muscleAreaMode, setMuscleAreaMode] = useState<FieldMode>('Global')
   const [planesMode, setPlanesMode] = useState<FieldMode>('Global')
+  const [selectedJointRow, setSelectedJointRow] = useState<JointRow | null>(null)
+  const [jointTooltip, setJointTooltip] = useState<{ visible: boolean; text: string; x: number; y: number }>({
+    visible: false,
+    text: '',
+    x: 0,
+    y: 0,
+  })
+  const [tooltip, setTooltip] = useState<{ visible: boolean; text: string; x: number; y: number }>({
+    visible: false,
+    text: '',
+    x: 0,
+    y: 0,
+  })
 
   useEffect(() => {
     const run = async () => {
       try {
         setLoading(true)
-        const [exerciseRows, taxonomyRows, muscleMapPayload, muscleSvg] = await Promise.all([
+        const [exerciseRows, taxonomyRows, muscleMapPayload, frontSvg, backSvg, jointsSvgText] = await Promise.all([
           parseCsv<{ ExerciseName?: string; Link?: string }>('/ExerciseName_Link.csv'),
           parseCsv<{ 'Muscle area'?: string }>('/TaggingCategories.csv'),
-          parseJson<MuscleMapPayload>('/muscle_map.json'),
-          fetch('/muscle_map.svg').then(async (response) => {
+          parseJson<MuscleMapPayload>('/muscle_selector_map.json'),
+          fetch('/Front_superficial.svg').then(async (response) => {
             if (!response.ok) {
-              throw new Error('Failed to load muscle_map.svg')
+              throw new Error('Failed to load Front_superficial.svg')
+            }
+            return response.text()
+          }),
+          fetch('/Back_superficial.svg').then(async (response) => {
+            if (!response.ok) {
+              throw new Error('Failed to load Back_superficial.svg')
+            }
+            return response.text()
+          }),
+          fetch('/joints.svg').then(async (response) => {
+            if (!response.ok) {
+              throw new Error('Failed to load joints.svg')
             }
             return response.text()
           }),
@@ -153,11 +285,14 @@ function App() {
 
         const parsedExercises: Exercise[] = exerciseRows
           .filter((row) => (row.ExerciseName ?? '').trim().length > 0)
-          .map((row) => ({
-            id: (row.ExerciseName ?? '').trim(),
-            name: (row.ExerciseName ?? '').trim(),
+          .map((row, index) => {
+            const name = (row.ExerciseName ?? '').trim()
+            return {
+            id: `${name}::${index}`,
+            name,
             link: (row.Link ?? '').trim(),
-          }))
+            }
+          })
 
         const areas = taxonomyRows
           .map((row) => (row['Muscle area'] ?? '').trim())
@@ -171,7 +306,9 @@ function App() {
         setExercises(parsedExercises)
         setMuscleAreaOptions(uniqueSorted(areas))
         setMuscleMap(muscleMapPayload)
-        setMuscleSvgMarkup(muscleSvg)
+        setFrontMuscleSvg(prepareSelectorSvg(frontSvg, 'front'))
+        setBackMuscleSvg(prepareSelectorSvg(backSvg, 'back'))
+        setJointsSvg(prepareJointsSvg(jointsSvgText))
 
         if (parsedExercises.length > 0) {
           setSelectedIds(new Set([parsedExercises[0].id]))
@@ -191,11 +328,11 @@ function App() {
   }, [tagsByExercise])
 
   const filteredExercises = useMemo(() => {
-    const query = searchQuery.trim().toLowerCase()
+    const query = normalizeLookupValue(searchQuery)
     if (!query) {
       return exercises
     }
-    return exercises.filter((exercise) => exercise.name.toLowerCase().includes(query))
+    return exercises.filter((exercise) => normalizeLookupValue(exercise.name).includes(query))
   }, [exercises, searchQuery])
 
   const activeExercise = useMemo(() => {
@@ -213,13 +350,21 @@ function App() {
     return tagsByExercise[activeExercise.id] ?? createEmptyTags()
   }, [activeExercise, tagsByExercise])
 
-  const idToTagMap = useMemo(() => {
+  const mapKeyToTagMap = useMemo(() => {
     const map: Record<string, string> = {}
     muscleMap.entries.forEach((entry) => {
-      map[entry.id] = entry.tag
+      map[`${entry.view}:${entry.id}`] = entry.tag
     })
     return map
   }, [muscleMap.entries])
+
+  const normalizedOptionMap = useMemo(() => {
+    const map: Record<string, string> = {}
+    muscleAreaOptions.forEach((option) => {
+      map[normalizeLookupValue(option)] = option
+    })
+    return map
+  }, [muscleAreaOptions])
 
   const missingFromMap = useMemo(() => {
     const mappedTags = new Set(muscleMap.entries.map((entry) => entry.tag))
@@ -274,8 +419,33 @@ function App() {
     })
   }
 
-  const toggleMuscleMapById = (muscleMapId: string) => {
-    const mappedTag = idToTagMap[muscleMapId]
+  const resolveClickedMuscleTag = (muscleElement: Element): string | null => {
+    const mapKey = muscleElement.getAttribute('data-map-key') ?? ''
+    const mappedByKey = mapKeyToTagMap[mapKey]
+    if (mappedByKey) {
+      return mappedByKey
+    }
+
+    const sourceId = muscleElement.getAttribute('data-source-id') ?? ''
+    const tooltipText =
+      muscleElement.querySelector('.tooltip-trigger')?.getAttribute('data-tooltip-text') ??
+      muscleElement.querySelector('title')?.textContent ??
+      ''
+
+    const candidates = [sourceId, tooltipText]
+      .map((item) => normalizeLookupValue(item))
+      .filter((item) => item.length > 0)
+
+    for (const candidate of candidates) {
+      if (normalizedOptionMap[candidate]) {
+        return normalizedOptionMap[candidate]
+      }
+    }
+
+    return null
+  }
+
+  const toggleMuscleTag = (mappedTag: string) => {
     if (!mappedTag) {
       return
     }
@@ -288,35 +458,133 @@ function App() {
       return
     }
 
-    const muscleElement = target.closest('[id]') as Element | null
+    const muscleElement = target.closest('g.muscle') as Element | null
     if (!muscleElement) {
       return
     }
 
-    const id = muscleElement.getAttribute('id')
-    if (!id) {
+    const mappedTag = resolveClickedMuscleTag(muscleElement)
+    if (!mappedTag) {
       return
     }
 
-    toggleMuscleMapById(id)
+    toggleMuscleTag(mappedTag)
+  }
+
+  const handleMuscleMapMove = (event: MouseEvent<HTMLDivElement>) => {
+    const target = event.target as Element | null
+    const container = muscleMapRef.current
+    if (!target || !container) {
+      return
+    }
+
+    const muscleElement = target.closest('g.muscle') as Element | null
+    if (!muscleElement) {
+      if (tooltip.visible) {
+        setTooltip((current) => ({ ...current, visible: false }))
+      }
+      return
+    }
+
+    const mapKey = muscleElement.getAttribute('data-map-key') ?? ''
+    const mappedTag = mapKeyToTagMap[mapKey]
+    const sourceId = muscleElement.getAttribute('data-source-id') ?? ''
+    const sourceLabel = formatSourceIdForTooltip(sourceId)
+
+    const tooltipText =
+      sourceLabel ||
+      (muscleElement.querySelector('.tooltip-trigger')?.getAttribute('data-tooltip-text') ??
+        muscleElement.querySelector('title')?.textContent ??
+        mappedTag ??
+        'Muscle')
+
+    const bounds = container.getBoundingClientRect()
+    setTooltip({
+      visible: true,
+      text: tooltipText,
+      x: event.clientX - bounds.left + 14,
+      y: event.clientY - bounds.top + 14,
+    })
+  }
+
+  const handleMuscleMapLeave = () => {
+    setTooltip((current) => ({ ...current, visible: false }))
+  }
+
+  const handleJointsMapClick = (event: MouseEvent<HTMLDivElement>) => {
+    const target = event.target as Element | null
+    if (!target) {
+      return
+    }
+
+    const jointElement = target.closest('g.joint-zone') as Element | null
+    if (!jointElement) {
+      return
+    }
+
+    const jointRow = jointElement.getAttribute('data-joint-row') as JointRow | null
+    if (!jointRow) {
+      return
+    }
+
+    setSelectedJointRow(jointRow)
+  }
+
+  const handleJointsMapMove = (event: MouseEvent<HTMLDivElement>) => {
+    const target = event.target as Element | null
+    const container = jointsMapRef.current
+    if (!target || !container) {
+      return
+    }
+
+    const jointElement = target.closest('g.joint-zone') as Element | null
+    if (!jointElement) {
+      if (jointTooltip.visible) {
+        setJointTooltip((current) => ({ ...current, visible: false }))
+      }
+      return
+    }
+
+    const jointRow = jointElement.getAttribute('data-joint-row') ?? 'Joint'
+    const bounds = container.getBoundingClientRect()
+    setJointTooltip({
+      visible: true,
+      text: jointRow,
+      x: event.clientX - bounds.left + 12,
+      y: event.clientY - bounds.top + 12,
+    })
+  }
+
+  const handleJointsMapLeave = () => {
+    setJointTooltip((current) => ({ ...current, visible: false }))
   }
 
   useEffect(() => {
-    if (!muscleMapRef.current || muscleMap.entries.length === 0) {
+    if (!muscleMapRef.current) {
       return
     }
 
-    muscleMap.entries.forEach((entry) => {
-      const node = muscleMapRef.current?.querySelector(`#${entry.id}`)
-      if (!node) {
-        return
-      }
-
-      const selected = activeTags.muscleAreas.includes(entry.tag)
-      node.classList.toggle('selected', selected)
-      node.classList.add('interactive-zone')
+    const regions = Array.from(muscleMapRef.current.querySelectorAll('g.muscle'))
+    regions.forEach((region) => {
+      const resolvedTag = resolveClickedMuscleTag(region)
+      const selected = resolvedTag ? activeTags.muscleAreas.includes(resolvedTag) : false
+      region.classList.toggle('selected', selected)
+      region.classList.add('interactive-zone')
     })
-  }, [activeTags.muscleAreas, muscleMap.entries, muscleSvgMarkup])
+  }, [activeTags.muscleAreas, mapKeyToTagMap, normalizedOptionMap, frontMuscleSvg, backMuscleSvg])
+
+  useEffect(() => {
+    if (!jointsMapRef.current) {
+      return
+    }
+
+    const jointNodes = Array.from(jointsMapRef.current.querySelectorAll('g.joint-zone'))
+    jointNodes.forEach((node) => {
+      const nodeJoint = node.getAttribute('data-joint-row')
+      const isSelected = selectedJointRow !== null && nodeJoint === selectedJointRow
+      node.classList.toggle('selected', isSelected)
+    })
+  }, [jointsSvg, selectedJointRow])
 
   const togglePlane = (row: JointRow, plane: Plane) => {
     updateActiveTags((current) => {
@@ -569,14 +837,53 @@ function App() {
                 <h3>Muscle Area</h3>
 
                 <div className="muscle-map-shell">
-                  <div
-                    ref={muscleMapRef}
-                    className="muscle-map"
-                    onClick={handleMuscleMapClick}
-                    role="img"
-                    aria-label="Clickable muscle map"
-                    dangerouslySetInnerHTML={{ __html: muscleSvgMarkup }}
-                  />
+                  <div className="muscle-map-with-selection">
+                    <div
+                      ref={muscleMapRef}
+                      className="muscle-map-panels"
+                      onClick={handleMuscleMapClick}
+                      onMouseMove={handleMuscleMapMove}
+                      onMouseLeave={handleMuscleMapLeave}
+                      role="img"
+                      aria-label="Clickable muscle map"
+                    >
+                      <div className="muscle-map-panel">
+                        <div className="muscle-map-title">Front</div>
+                        <div className="muscle-map-svg" dangerouslySetInnerHTML={{ __html: frontMuscleSvg }} />
+                      </div>
+                      <div className="muscle-map-panel">
+                        <div className="muscle-map-title">Back</div>
+                        <div className="muscle-map-svg" dangerouslySetInnerHTML={{ __html: backMuscleSvg }} />
+                      </div>
+                      {tooltip.visible && (
+                        <div
+                          className="muscle-tooltip"
+                          style={{ left: `${tooltip.x}px`, top: `${tooltip.y}px` }}
+                          role="tooltip"
+                        >
+                          {tooltip.text}
+                        </div>
+                      )}
+                    </div>
+
+                    <aside className="selected-muscles-panel" aria-label="Selected muscle areas">
+                      <h4>Selected Muscle Areas</h4>
+                      {activeTags.muscleAreas.length === 0 ? (
+                        <p className="empty-selection">Click muscles to add selections.</p>
+                      ) : (
+                        <div className="selected-muscle-buttons">
+                          {activeTags.muscleAreas.map((area) => (
+                            <button key={area} className="selected-muscle-btn" onClick={() => toggleMuscleArea(area)}>
+                              {area}
+                              <span className="remove-mark" aria-hidden="true">
+                                ×
+                              </span>
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </aside>
+                  </div>
                 </div>
 
                 <p className="helper-text">Click a muscle shape to toggle exactly one matching tag from TaggingCategories.</p>
@@ -588,14 +895,6 @@ function App() {
                     {mapOnlyTags.length > 0 && <p>Mapped tags not in taxonomy: {mapOnlyTags.join(', ')}</p>}
                   </div>
                 )}
-
-                <div className="chip-row">
-                  {activeTags.muscleAreas.map((area) => (
-                    <span key={area} className="chip">
-                      {area}
-                    </span>
-                  ))}
-                </div>
 
                 <details>
                   <summary>Manual fine-tune muscle areas</summary>
@@ -615,6 +914,55 @@ function App() {
               </div>
 
               <div className="field-group">
+                <h3>Joints</h3>
+                <div className="joints-pane">
+                  <div
+                    ref={jointsMapRef}
+                    className="joints-map"
+                    onClick={handleJointsMapClick}
+                    onMouseMove={handleJointsMapMove}
+                    onMouseLeave={handleJointsMapLeave}
+                    role="img"
+                    aria-label="Clickable joints map"
+                  >
+                    <div className="joints-map-svg" dangerouslySetInnerHTML={{ __html: jointsSvg }} />
+                    {jointTooltip.visible && (
+                      <div
+                        className="joint-tooltip"
+                        style={{ left: `${jointTooltip.x}px`, top: `${jointTooltip.y}px` }}
+                        role="tooltip"
+                      >
+                        {jointTooltip.text}
+                      </div>
+                    )}
+                  </div>
+
+                  <aside className="joint-options-panel" aria-label="Joint options">
+                    <h4>{selectedJointRow ? `${selectedJointRow} options` : 'Select a joint'}</h4>
+                    {selectedJointRow ? (
+                      <div className="joint-plane-buttons">
+                        {PLANES.map((plane) => {
+                          const checked = (activeTags.planes[selectedJointRow] ?? []).includes(plane)
+                          const label = plane === 'Sagittal' ? 'Saggital' : plane
+                          return (
+                            <button
+                              key={`${selectedJointRow}-${plane}`}
+                              className={`joint-plane-btn ${checked ? 'active' : ''}`}
+                              onClick={() => togglePlane(selectedJointRow, plane)}
+                            >
+                              {label}
+                            </button>
+                          )
+                        })}
+                      </div>
+                    ) : (
+                      <p className="empty-selection">Click a joint circle to choose planes.</p>
+                    )}
+                  </aside>
+                </div>
+              </div>
+
+              <div className="field-group">
                 <h3>Planes of Movement Matrix</h3>
                 <table className="planes-table">
                   <thead>
@@ -628,7 +976,7 @@ function App() {
                   </thead>
                   <tbody>
                     {JOINT_ROWS.map((row) => (
-                      <tr key={row}>
+                      <tr key={row} className={selectedJointRow === row ? 'joint-row-focused' : ''}>
                         <td>{row}</td>
                         {PLANES.map((plane) => (
                           <td key={`${row}-${plane}`}>

@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Muscle Tagging Tool</title>
+    <style>
+        :root {
+            --bg-color: #f8f9fa;
+            --card-bg: #ffffff;
+            --muscle-default: #e0e0e0;
+            --muscle-hover: #ffadad;
+            --muscle-selected: #4CAF50;
+            --outline: #333;
+        }
+
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg-color); margin: 0; display: flex; flex-direction: column; align-items: center; }
+        .header { margin: 20px; text-align: center; }
+        
+        .main-container { display: flex; gap: 30px; padding: 20px; max-width: 1200px; width: 100%; justify-content: center; }
+        
+        /* SVG Map Styling */
+        .map-card { background: var(--card-bg); padding: 20px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        svg { width: 750px; height: auto; }
+        
+        .muscle-path { 
+            fill: var(--muscle-default); 
+            stroke: #999; 
+            stroke-width: 1; 
+            cursor: pointer; 
+            transition: fill 0.2s, stroke 0.2s; 
+        }
+        .muscle-path:hover { fill: var(--muscle-hover); stroke: var(--outline); }
+        .muscle-path.selected { fill: var(--muscle-selected); stroke: #2e7d32; stroke-width: 2; }
+        
+        .body-outline { fill: none; stroke: var(--outline); stroke-width: 2; pointer-events: none; }
+        .label-text { font-size: 18px; font-weight: bold; fill: #555; pointer-events: none; }
+
+        /* Sidebar Styling */
+        .sidebar { width: 300px; display: flex; flex-direction: column; gap: 20px; }
+        .info-card { background: var(--card-bg); padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        h3 { margin-top: 0; color: #333; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        
+        .tag-list { display: flex; flex-wrap: wrap; gap: 8px; min-height: 50px; }
+        .tag { background: var(--muscle-selected); color: white; padding: 6px 12px; border-radius: 20px; font-size: 14px; font-weight: 500; animation: pop 0.2s ease-out; }
+        
+        @keyframes pop {
+            0% { transform: scale(0.8); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .empty-msg { color: #999; font-style: italic; font-size: 14px; }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1>Anatomical Muscle Selector</h1>
+    <p>Click regions on the map to toggle selections for your exercise tagging app.</p>
+</div>
+
+<div class="main-container">
+    <div class="map-card">
+        <svg viewBox="0 0 1000 650" id="muscleMap">
+            <text x="250" y="40" text-anchor="middle" class="label-text">FRONT VIEW</text>
+            <text x="750" y="40" text-anchor="middle" class="label-text">BACK VIEW</text>
+
+            <g id="FrontView" transform="translate(100, 70)">
+                <path id="Chest" class="muscle-path" d="M120,100 Q150,90 180,100 L180,150 Q150,160 120,150 Z M220,100 Q250,90 280,100 L280,150 Q250,160 220,150 Z" />
+                <path id="Abdominal - central" class="muscle-path" d="M185,160 L215,160 L215,280 L185,280 Z" />
+                <path id="Abdominal - lateral" class="muscle-path" d="M150,160 L185,165 L185,280 L155,270 Z M215,165 L250,160 L245,270 L215,280 Z" />
+                <path id="Quadriceps" class="muscle-path" d="M135,330 L185,340 L175,460 L135,450 Z M215,340 L265,330 L265,450 L225,460 Z" />
+                <circle id="Shoulder anterior" class="muscle-path" cx="105" cy="105" r="25" />
+                <circle id="Shoulder anterior" class="muscle-path" cx="295" cy="105" r="25" />
+                <path id="Upper arm anterior" class="muscle-path" d="M80,130 L105,130 L100,220 L80,220 Z M295,130 L320,130 L320,220 L300,220 Z" />
+                <ellipse id="Neck anterior" class="muscle-path" cx="200" cy="70" rx="20" ry="15" />
+                
+                <path class="body-outline" d="M200,30 L230,50 L280,80 L320,100 L340,150 L320,220 L330,320 L290,340 L280,550 L250,600 L200,580 L150,600 L120,550 L110,340 L70,320 L80,220 L60,150 L80,100 L120,80 L170,50 Z" />
+            </g>
+
+            <g id="BackView" transform="translate(600, 70)">
+                <path id="Gluteal - posterior" class="muscle-path" d="M125,310 Q150,290 185,310 L185,360 Q150,370 120,350 Z M215,310 Q250,290 275,310 L280,350 Q250,370 215,360 Z" />
+                <path id="Hamstrings" class="muscle-path" d="M130,370 L180,380 L175,480 L135,470 Z M220,380 L270,370 L265,470 L225,480 Z" />
+                <rect id="Spinal extensors lower" class="muscle-path" x="185" y="240" width="30" height="60" rx="5" />
+                <path id="Neck posterior" class="muscle-path" d="M185,55 Q200,45 215,55 L210,90 L190,90 Z" />
+                <ellipse id="Calf" class="muscle-path" cx="150" cy="530" rx="20" ry="40" />
+                <ellipse id="Calf" class="muscle-path" cx="250" cy="530" rx="20" ry="40" />
+
+                <path class="body-outline" d="M200,30 L230,50 L280,80 L320,100 L340,150 L320,220 L330,320 L290,340 L280,550 L250,600 L200,580 L150,600 L120,550 L110,340 L70,320 L80,220 L60,150 L80,100 L120,80 L170,50 Z" />
+            </g>
+        </svg>
+    </div>
+
+    <div class="sidebar">
+        <div class="info-card">
+            <h3>Active Selections</h3>
+            <div id="tagDisplay" class="tag-list">
+                <span class="empty-msg">No muscles selected</span>
+            </div>
+        </div>
+        
+        <div class="info-card">
+            <h3>App Integration</h3>
+            <p style="font-size: 13px; color: #666;">These IDs match your Google Sheet tags exactly.</p>
+            <button onclick="clearAll()" style="width:100%; padding: 10px; cursor:pointer; background:#f44336; color:white; border:none; border-radius:4px;">Clear All</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const selectedMuscles = new Set();
+    const tagDisplay = document.getElementById('tagDisplay');
+
+    // Add click listener to the entire SVG
+    document.getElementById('muscleMap').addEventListener('click', function(e) {
+        // Find if the clicked element is a muscle path
+        const target = e.target;
+        if (target.classList.contains('muscle-path')) {
+            const muscleId = target.id;
+            
+            // Toggle selection
+            if (selectedMuscles.has(muscleId)) {
+                selectedMuscles.delete(muscleId);
+                // Remove visual 'selected' class from ALL elements with this ID (handles bilateral muscles)
+                document.querySelectorAll(`[id="${muscleId}"]`).forEach(el => el.classList.remove('selected'));
+            } else {
+                selectedMuscles.add(muscleId);
+                document.querySelectorAll(`[id="${muscleId}"]`).forEach(el => el.classList.add('selected'));
+            }
+            
+            updateSidebar();
+        }
+    });
+
+    function updateSidebar() {
+        if (selectedMuscles.size === 0) {
+            tagDisplay.innerHTML = '<span class="empty-msg">No muscles selected</span>';
+            return;
+        }
+
+        tagDisplay.innerHTML = '';
+        selectedMuscles.forEach(muscle => {
+            const span = document.createElement('span');
+            span.className = 'tag';
+            span.innerText = muscle;
+            tagDisplay.appendChild(span);
+        });
+    }
+
+    function clearAll() {
+        selectedMuscles.clear();
+        document.querySelectorAll('.muscle-path').forEach(el => el.classList.remove('selected'));
+        updateSidebar();
+    }
+</script>
+
+</body>
+</html>

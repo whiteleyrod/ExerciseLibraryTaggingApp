@@ -167,34 +167,226 @@
   border-radius: 8px;
   background: #f8fafc;
   padding: 0.5rem;
+  overflow-x: auto;
 }
 
-.muscle-map {
-  width: 100%;
-  max-width: 560px;
-  display: block;
-  margin: 0 auto;
+.muscle-map-panels {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(280px, 1fr));
+  gap: 0.75rem;
+  min-width: 620px;
+  position: relative;
 }
 
-.muscle-map svg {
+.muscle-map-with-selection {
+  display: grid;
+  grid-template-columns: minmax(620px, 1fr) 260px;
+  gap: 0.75rem;
+  align-items: start;
+  min-width: 920px;
+}
+
+.muscle-map-panel {
+  background: #fff;
+  border: 1px solid #dbe3ef;
+  border-radius: 8px;
+  padding: 0.45rem;
+}
+
+.muscle-map-title {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #334155;
+  margin-bottom: 0.35rem;
+}
+
+.selected-muscles-panel {
+  border: 1px solid #dbe3ef;
+  border-radius: 8px;
+  background: #fff;
+  padding: 0.55rem;
+}
+
+.selected-muscles-panel h4 {
+  margin: 0 0 0.5rem;
+  font-size: 0.86rem;
+  color: #334155;
+}
+
+.empty-selection {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.82rem;
+}
+
+.selected-muscle-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  max-height: 420px;
+  overflow: auto;
+}
+
+.selected-muscle-btn {
+  border: 1px solid #93c5fd;
+  background: #eff6ff;
+  color: #1e3a8a;
+  border-radius: 999px;
+  padding: 0.3rem 0.55rem;
+  text-align: left;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.8rem;
+}
+
+.selected-muscle-btn:hover {
+  background: #dbeafe;
+}
+
+.joints-pane {
+  display: grid;
+  grid-template-columns: minmax(280px, 420px) 1fr;
+  gap: 0.75rem;
+  align-items: start;
+}
+
+.joints-map {
+  border: 1px solid #dbe3ef;
+  border-radius: 8px;
+  background: #fff;
+  padding: 0.45rem;
+  position: relative;
+}
+
+.joints-map-svg svg {
   width: 100%;
   height: auto;
   display: block;
 }
 
-.muscle-map .interactive-zone {
+.joints-map-svg .joint-zone {
+  cursor: pointer;
+}
+
+.joints-map-svg .joint-zone:hover path,
+.joints-map-svg .joint-zone:hover rect,
+.joints-map-svg .joint-zone:hover ellipse,
+.joints-map-svg .joint-zone:hover circle,
+.joints-map-svg .joint-zone:hover polygon {
+  stroke: #2563eb !important;
+  stroke-width: 2 !important;
+}
+
+.joints-map-svg .joint-zone.selected path,
+.joints-map-svg .joint-zone.selected rect,
+.joints-map-svg .joint-zone.selected ellipse,
+.joints-map-svg .joint-zone.selected circle,
+.joints-map-svg .joint-zone.selected polygon {
+  stroke: #166534 !important;
+  stroke-width: 2.5 !important;
+  fill-opacity: 0.9 !important;
+}
+
+.joint-options-panel {
+  border: 1px solid #dbe3ef;
+  border-radius: 8px;
+  background: #fff;
+  padding: 0.55rem;
+}
+
+.joint-options-panel h4 {
+  margin: 0 0 0.5rem;
+  font-size: 0.9rem;
+  color: #334155;
+}
+
+.joint-plane-buttons {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.joint-plane-btn {
+  border: 1px solid #cbd5e1;
+  background: #f8fafc;
+  border-radius: 999px;
+  padding: 0.35rem 0.7rem;
+  cursor: pointer;
+}
+
+.joint-plane-btn.active {
+  border-color: #86efac;
+  background: #dcfce7;
+  color: #166534;
+}
+
+.joint-tooltip {
+  position: absolute;
+  z-index: 30;
+  pointer-events: none;
+  background: rgba(15, 23, 42, 0.95);
+  color: #fff;
+  padding: 0.28rem 0.5rem;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.remove-mark {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.muscle-map-svg svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.joint-row-focused {
+  background: #ecfeff;
+}
+
+.muscle-map-svg .muscle {
   transition: fill 0.15s ease, stroke 0.15s ease;
   cursor: pointer;
 }
 
-.muscle-map .interactive-zone:hover {
-  fill: rgba(96, 165, 250, 0.45);
-  stroke: #1d4ed8;
+.muscle-map-svg .muscle:hover path,
+.muscle-map-svg .muscle:hover rect,
+.muscle-map-svg .muscle:hover ellipse,
+.muscle-map-svg .muscle:hover circle,
+.muscle-map-svg .muscle:hover polygon {
+  stroke: #2563eb !important;
+  stroke-width: 2.6 !important;
 }
 
-.muscle-map .interactive-zone.selected {
-  fill: rgba(30, 64, 175, 0.55);
-  stroke: #1e3a8a;
+.muscle-map-svg .muscle.selected path,
+.muscle-map-svg .muscle.selected rect,
+.muscle-map-svg .muscle.selected ellipse,
+.muscle-map-svg .muscle.selected circle,
+.muscle-map-svg .muscle.selected polygon {
+  stroke: #166534 !important;
+  stroke-width: 3 !important;
+  fill-opacity: 0.72 !important;
+}
+
+.muscle-tooltip {
+  position: absolute;
+  z-index: 30;
+  pointer-events: none;
+  background: rgba(15, 23, 42, 0.95);
+  color: #fff;
+  padding: 0.3rem 0.5rem;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  font-weight: 500;
+  white-space: nowrap;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
 }
 
 .mapping-warning {
@@ -304,6 +496,10 @@
     grid-template-columns: 1fr;
   }
 
+  .joints-pane {
+    grid-template-columns: 1fr;
+  }
+
   .list {
     height: 320px;
   }
@@ -314,5 +510,10 @@
 
   .config-grid {
     grid-template-columns: 1fr;
+  }
+
+  .muscle-map-with-selection {
+    grid-template-columns: 1fr;
+    min-width: 760px;
   }
 }
