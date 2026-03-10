@@ -1,0 +1,121 @@
+Sternocleidomastoid
+Longus colli
+Longus capitis
+rectus captis anterior
+rectus captis lateral
+Scalenes
+Levator scapulae
+Upper trapezius
+Middle trapezius
+Lower trapezius
+Rhomboids
+Serratus anterior
+Rectus abdominus
+External abdominal oblique
+Internal abdominal oblique
+Transversus abdominus
+Pyramidalis
+Quadratus lumborum
+Iliocostalis lumborum
+Iliocostalis thoracic
+Iliocostalis capitus
+Longissimuss colli
+Longissimuss thoracis
+Longissimuss thoracis pars lumborum
+Spinalis capitus
+Spinalis colli
+Spinalis thoracis
+Multifidus lumborum
+Multifidus thoracis
+Multifidus colli
+Rotatores long 1-11
+Rotatores short 1-11
+Rotatores lumborum
+Rotatores colli
+Levator costorum
+Serratus posterior inferior
+Serratus posterior superior
+Pectoralis major
+Pectoralis minor
+Subclavius
+Deltoid anterior
+Deltoid middle
+Deltoid posterior
+Teres major
+Teres minor
+Infraspinatus
+Supraspinatus
+Subscapularis
+Biceps brachii
+Brachialis
+Triceps brachii
+Anconeus
+Pronator teres
+Flexor carpi radialis
+Palmaris longus
+Flexor carpi ulnaris
+Flexor digitorum profundus
+Flexor digitorum superficialis
+Flexor pollicis longus
+Extensor digitorum
+Extensor digiti minimi
+Extensor carpi ulnaris
+Extensor carpi radialis longus
+Extensor carpi radialis brevis
+Supinator
+Extensor indicis
+Abductor pollicis brevis
+Abductor pollicis longus
+Extensor pollicis longus
+Opponens pollicis
+Flexor pollicis brevis
+Abductor digiti minimi (hand)
+Lumbricales of the hand 1-4
+Dorsal interossei hand 1-4
+Palmar interossei hand 1-3
+Psoas major
+Psoas minor
+Iliacus
+Tensor fasciae latae
+Gluteus maximus
+Gluteus medius
+Gluteus minimus
+Piriformis
+Obturator internus
+Obturator externus
+Gemellus inferior
+Gemellus superior
+Quadratus femoris
+Vastus lateralis
+Vastus medialis
+Vastus intermedius
+Rectus femoris
+Biceps femoris
+Semitendinosus
+Semimembranosus
+Gracilis
+Adductor brevis
+Adductor longus
+Adductor magnus - adductor part
+Adductor magnus - ischiocondylar part
+Tibialis anterior
+Extensor hallucis longus
+Extensor digitorum longus
+Peroneus tertius
+Peroneus longus
+Peroneus brevis
+Tibialis posterior
+Extensor digitorum brevis
+Extensor hallucis brevis
+Dorsal interossei foot 1-4
+Abductor hallucis
+flexor digitorum brevis
+Abductor digiti minimi (foot)
+Abductor of fifth metatarsal
+Quadratus plantae
+Lumbricales of the foot 1-4
+Flexor hallucis brevis
+Adductor hallucis
+Flexor digiti minimi brevis (foot)
+Opponens digiti minimi (foot)
+Plantar interossei 1-3

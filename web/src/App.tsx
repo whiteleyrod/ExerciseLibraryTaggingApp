@@ -26,6 +26,7 @@ type JointRow =
 
 type TagState = {
   muscleAreas: string[]
+  musclesInvolved: string[]
   planes: Record<JointRow, Plane[]>
 }
 
@@ -61,6 +62,7 @@ const STORAGE_KEY = 'exercise-tagging-app-tags-v1'
 
 const createEmptyTags = (): TagState => ({
   muscleAreas: [],
+  musclesInvolved: [],
   planes: JOINT_ROWS.reduce(
     (accumulator, row) => ({ ...accumulator, [row]: [] }),
     {} as Record<JointRow, Plane[]>,
@@ -95,6 +97,7 @@ function App() {
   const [error, setError] = useState<string | null>(null)
   const [exercises, setExercises] = useState<Exercise[]>([])
   const [muscleAreaOptions, setMuscleAreaOptions] = useState<string[]>([])
+  const [muscleHierarchy, setMuscleHierarchy] = useState<Record<string, string[]>>({})
   const [tagsByExercise, setTagsByExercise] = useState<Record<string, TagState>>({})
   const [searchQuery, setSearchQuery] = useState('')
   const [muscleSearch, setMuscleSearch] = useState('')
@@ -111,9 +114,10 @@ function App() {
     const run = async () => {
       try {
         setLoading(true)
-        const [exerciseRows, taxonomyRows] = await Promise.all([
+        const [exerciseRows, taxonomyRows, hierarchyData] = await Promise.all([
           parseCsv<{ ExerciseName?: string; Link?: string }>('/ExerciseName_Link.csv'),
           parseCsv<{ 'Muscle area'?: string }>('/TaggingCategories.csv'),
+          fetch('/muscle_hierarchy.json').then((res) => res.json() as Promise<Record<string, string[]>>),
         ])
 
         const parsedExercises: Exercise[] = exerciseRows
@@ -135,6 +139,7 @@ function App() {
 
         setExercises(parsedExercises)
         setMuscleAreaOptions(uniqueSorted(areas))
+        setMuscleHierarchy(hierarchyData)
 
         if (parsedExercises.length > 0) {
           setSelectedIds(new Set([parsedExercises[0].id]))
@@ -213,12 +218,38 @@ function App() {
   const toggleMuscleArea = (value: string) => {
     updateActiveTags((current) => {
       const exists = current.muscleAreas.includes(value)
-      const next = exists
+      const nextAreas = exists
         ? current.muscleAreas.filter((item) => item !== value)
         : [...current.muscleAreas, value]
+
+      let nextInvolved = [...current.musclesInvolved]
+      const mappedMuscles = muscleHierarchy[value] ?? []
+
+      if (exists) {
+        // Deselecting: remove mapped individual muscles
+        nextInvolved = nextInvolved.filter((muscle) => !mappedMuscles.includes(muscle))
+      } else {
+        // Selecting: add mapped individual muscles
+        nextInvolved = [...nextInvolved, ...mappedMuscles]
+      }
+
       return {
         ...current,
-        muscleAreas: uniqueSorted(next),
+        muscleAreas: uniqueSorted(nextAreas),
+        musclesInvolved: uniqueSorted(nextInvolved),
+      }
+    })
+  }
+
+  const toggleMuscleInvolved = (value: string) => {
+    updateActiveTags((current) => {
+      const exists = current.musclesInvolved.includes(value)
+      const next = exists
+        ? current.musclesInvolved.filter((item) => item !== value)
+        : [...current.musclesInvolved, value]
+      return {
+        ...current,
+        musclesInvolved: uniqueSorted(next),
       }
     })
   }
@@ -271,6 +302,7 @@ function App() {
   const applyPasteToTarget = (target: TagState, source: TagState): TagState => {
     const next: TagState = {
       muscleAreas: [...target.muscleAreas],
+      musclesInvolved: [...target.musclesInvolved],
       planes: { ...target.planes },
     }
 
@@ -278,8 +310,10 @@ function App() {
       const mode = resolveMode(muscleAreaMode)
       if (mode === 'Replace') {
         next.muscleAreas = uniqueSorted(source.muscleAreas)
+        next.musclesInvolved = uniqueSorted(source.musclesInvolved)
       } else {
         next.muscleAreas = uniqueSorted([...target.muscleAreas, ...source.muscleAreas])
+        next.musclesInvolved = uniqueSorted([...target.musclesInvolved, ...source.musclesInvolved])
       }
     }
 
@@ -472,6 +506,43 @@ function App() {
                       {option}
                     </label>
                   ))}
+                </div>
+              </div>
+
+              <div className="field-group">
+                <h3>Muscles Involved</h3>
+                <div className="chip-row">
+                  {activeTags.musclesInvolved.length === 0 && <span className="chip empty">None selected</span>}
+                  {activeTags.musclesInvolved.map((muscle) => (
+                    <span key={muscle} className="chip">
+                      {muscle}
+                    </span>
+                  ))}
+                </div>
+
+                <div className="option-grid">
+                  {activeTags.muscleAreas.map((area) => {
+                    const mappedMuscles = muscleHierarchy[area] ?? []
+                    if (mappedMuscles.length === 0) return null
+
+                    return (
+                      <div key={`group-${area}`} style={{ gridColumn: '1 / -1', marginBottom: '1rem' }}>
+                        <h4 style={{ margin: '0 0 0.5rem 0', fontSize: '0.9rem', color: '#666' }}>{area}</h4>
+                        <div className="option-grid">
+                          {mappedMuscles.map((muscle) => (
+                            <label key={muscle} className="option-item">
+                              <input
+                                type="checkbox"
+                                checked={activeTags.musclesInvolved.includes(muscle)}
+                                onChange={() => toggleMuscleInvolved(muscle)}
+                              />
+                              {muscle}
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+                    )
+                  })}
                 </div>
               </div>
 

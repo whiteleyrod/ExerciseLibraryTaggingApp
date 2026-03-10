@@ -1,0 +1,42 @@
+Neck anterior
+Neck lateral
+Neck posterior
+Shoulder anterior
+Shoulder posterior
+Shoulder lateral
+Chest
+Upper arm anterior
+Upper arm posterior
+Forearm anterior
+Forearm posterior
+Wrist flexors
+Wrist extensors
+Wrist ulnar deviators
+Wrist radial deviators
+Forearm pronators
+Forearm supinators
+Finger flexors
+Finger extensors
+Finger abductors
+Finger adductors
+Thumb flexors
+Thumb extensors
+Thumb adductors
+Thumb Abductors
+Abdominal - central
+Abdominal - lateral
+Spinal extensors middle
+Spinal extensors lower
+Gluteal - posterior
+Gluteals - lateral
+Hip flexors
+Hip lateral rotators
+Hip medial rotators
+Adductors
+Hamstrings
+Quadriceps
+Foot and toe extensors
+Calf
+Foot intrinsics
+Ankle evertors
+Ankle invertors
