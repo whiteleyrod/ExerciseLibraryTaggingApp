@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type MouseEvent } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, type MouseEvent } from 'react'
 import Papa, { type ParseResult } from 'papaparse'
 import './App.css'
 
@@ -1110,9 +1110,15 @@ function App() {
   }
 
   const resolveClickedMuscleTag = (muscleElement: Element): string | null => {
+    const cachedResolvedTag = muscleElement.getAttribute('data-resolved-tag') ?? ''
+    if (cachedResolvedTag) {
+      return cachedResolvedTag
+    }
+
     const mapKey = muscleElement.getAttribute('data-map-key') ?? ''
     const mappedByKey = mapKeyToTagMap[mapKey]
     if (mappedByKey) {
+      muscleElement.setAttribute('data-resolved-tag', mappedByKey)
       return mappedByKey
     }
 
@@ -1128,16 +1134,20 @@ function App() {
 
     for (const candidate of candidates) {
       if (normalizedOptionMap[candidate]) {
-        return normalizedOptionMap[candidate]
+        const resolved = normalizedOptionMap[candidate]
+        muscleElement.setAttribute('data-resolved-tag', resolved)
+        return resolved
       }
 
       const mappedFromInvolved = musclesInvolvedLookup.singleAreaByMuscle[candidate]
       if (mappedFromInvolved) {
+        muscleElement.setAttribute('data-resolved-tag', mappedFromInvolved)
         return mappedFromInvolved
       }
 
       const fuzzyMappedArea = musclesInvolvedLookup.findAreaByCandidate(candidate)
       if (fuzzyMappedArea) {
+        muscleElement.setAttribute('data-resolved-tag', fuzzyMappedArea)
         return fuzzyMappedArea
       }
     }
@@ -1163,7 +1173,16 @@ function App() {
       return
     }
 
-    const mappedTag = resolveClickedMuscleTag(muscleElement)
+    let mappedTag: string | null = null
+    let lookupNode: Element | null = muscleElement
+    while (lookupNode && lookupNode !== muscleMapRef.current) {
+      mappedTag = resolveClickedMuscleTag(lookupNode)
+      if (mappedTag) {
+        break
+      }
+      lookupNode = lookupNode.parentElement
+    }
+
     if (!mappedTag) {
       return
     }
@@ -1273,7 +1292,7 @@ function App() {
     setJointTooltip((current) => ({ ...current, visible: false }))
   }
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!muscleMapRef.current) {
       return
     }
@@ -1282,10 +1301,17 @@ function App() {
     regions.forEach((region) => {
       region.classList.remove('selected')
       region.classList.add('interactive-zone')
+
+      const resolvedTag = resolveClickedMuscleTag(region)
+      if (resolvedTag) {
+        region.setAttribute('data-resolved-tag', resolvedTag)
+      } else {
+        region.removeAttribute('data-resolved-tag')
+      }
     })
 
     regions.forEach((region) => {
-      const resolvedTag = resolveClickedMuscleTag(region)
+      const resolvedTag = region.getAttribute('data-resolved-tag') ?? ''
       const selected = resolvedTag ? activeTags.muscleAreas.includes(resolvedTag) : false
       if (!selected) {
         return
@@ -1301,9 +1327,10 @@ function App() {
         ancestor = ancestor.parentElement
       }
     })
-  }, [activeTags.muscleAreas, mapKeyToTagMap, normalizedOptionMap, musclesInvolvedLookup, frontMuscleSvg, backMuscleSvg])
 
-  useEffect(() => {
+  })
+
+  useLayoutEffect(() => {
     if (!jointsMapRef.current) {
       return
     }
@@ -1319,7 +1346,7 @@ function App() {
 
       node.classList.toggle('selected', isFocused || isTagged)
     })
-  }, [jointsSvg, selectedJointRow, activeTags.planes])
+  })
 
   const togglePlane = (row: JointRow, plane: Plane) => {
     updateActiveTags((current) => {
