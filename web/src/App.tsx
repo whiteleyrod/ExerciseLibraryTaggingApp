@@ -30,6 +30,7 @@ type TaggingCategoryRow = {
   'Body position'?: string
   Difficulty?: string
   Level?: string
+  'Limbs used'?: string
 }
 
 type Plane = 'Frontal' | 'Sagittal' | 'Transverse'
@@ -54,6 +55,7 @@ type TagState = {
   bodyPositions: string[]
   difficulty: number | null
   levels: string[]
+  limbsUsed: string[]
   planes: Record<JointRow, Plane[]>
 }
 
@@ -74,6 +76,7 @@ type MuscleMapPayload = {
 type PaneId =
   | 'exercise-library'
   | 'exercise-list'
+  | 'batch-paste'
   | 'session-controls'
   | 'muscle-map'
   | 'muscles-involved'
@@ -81,6 +84,7 @@ type PaneId =
   | 'body-position'
   | 'difficulty'
   | 'level'
+  | 'limbs-used'
   | 'joints'
   | 'planes-matrix'
 
@@ -106,6 +110,14 @@ type LayoutPreset = {
   label: string
   rowHeights: number[]
   rowWidths: number[][]
+}
+
+type BatchInputRow = {
+  rowNumber: number
+  name: string
+  link: string
+  matchedExercise: Exercise | null
+  issue: string | null
 }
 
 const JOINT_ROWS: JointRow[] = [
@@ -135,7 +147,7 @@ const ALIAS_MAP: Record<string, string> = {
 
 const STORAGE_KEY = 'exercise-tagging-app-tags-v1'
 
-const DOCK_ROW_SIZES = [2, 3, 4, 3]
+const DOCK_ROW_SIZES = [2, 3, 4, 4]
 
 const MIN_ROW_SIZE = 0.12
 const MIN_COLUMN_SIZE = 0.15
@@ -149,13 +161,14 @@ const DEFAULT_DOCK_ASSIGNMENTS: DockSlot[] = [
   'muscles-involved',
   'equipment',
   'planes-matrix',
-  null,
+  'batch-paste',
   'body-position',
   'difficulty',
   'level',
+  'limbs-used',
 ]
 
-const DEFAULT_ROW_HEIGHTS = [0.22, 0.26, 0.26, 0.26]
+const DEFAULT_ROW_HEIGHTS = [0.2, 0.25, 0.27, 0.28]
 
 const DEFAULT_ROW_WIDTHS = DOCK_ROW_SIZES.map((columns) => Array.from({ length: columns }, () => 1 / columns))
 
@@ -169,14 +182,14 @@ const LAYOUT_PRESETS: LayoutPreset[] = [
   {
     id: 'map-focus',
     label: 'Map Focus',
-    rowHeights: [0.3, 0.3, 0.22, 0.18],
-    rowWidths: [[0.4, 0.6], [0.45, 0.25, 0.3], [0.2, 0.2, 0.2, 0.2], [0.34, 0.33, 0.33]],
+    rowHeights: [0.28, 0.29, 0.22, 0.21],
+    rowWidths: [[0.4, 0.6], [0.45, 0.25, 0.3], [0.2, 0.2, 0.2, 0.2], [0.25, 0.25, 0.25, 0.25]],
   },
   {
     id: 'library-focus',
     label: 'Library Focus',
-    rowHeights: [0.3, 0.26, 0.24, 0.2],
-    rowWidths: [[0.65, 0.35], [0.34, 0.33, 0.33], [0.25, 0.25, 0.25, 0.25], [0.34, 0.33, 0.33]],
+    rowHeights: [0.28, 0.24, 0.24, 0.24],
+    rowWidths: [[0.65, 0.35], [0.34, 0.33, 0.33], [0.25, 0.25, 0.25, 0.25], [0.25, 0.25, 0.25, 0.25]],
   },
 ]
 
@@ -203,6 +216,7 @@ const createEmptyTags = (): TagState => ({
   bodyPositions: [],
   difficulty: null,
   levels: [],
+  limbsUsed: [],
   planes: JOINT_ROWS.reduce(
     (accumulator, row) => ({ ...accumulator, [row]: [] }),
     {} as Record<JointRow, Plane[]>,
@@ -212,6 +226,7 @@ const createEmptyTags = (): TagState => ({
 type LegacyTagShape = Partial<TagState> & {
   bodyPosition?: string | null
   level?: string | null
+  limbsUsedLegacy?: string | null
 }
 
 const normalizeTagState = (value: LegacyTagShape | null | undefined): TagState => {
@@ -251,6 +266,13 @@ const normalizeTagState = (value: LegacyTagShape | null | undefined): TagState =
         ? value.levels.map((item) => String(item))
         : value?.level
           ? [String(value.level)]
+          : [],
+    ),
+    limbsUsed: uniqueSorted(
+      Array.isArray(value?.limbsUsed)
+        ? value.limbsUsed.map((item) => String(item))
+        : value?.limbsUsedLegacy
+          ? [String(value.limbsUsedLegacy)]
           : [],
     ),
     planes: normalizedPlanes,
@@ -457,6 +479,8 @@ function App() {
   const jointsMapRef = useRef<HTMLDivElement | null>(null)
   const dockLayoutRef = useRef<HTMLDivElement | null>(null)
   const dockRowRefs = useRef<Array<HTMLDivElement | null>>([])
+  const lastMuscleClickRef = useRef<{ key: string; timestamp: number } | null>(null)
+  const lastJointClickRef = useRef<{ key: string; timestamp: number } | null>(null)
 
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -472,9 +496,13 @@ function App() {
   const [equipmentGroupRows, setEquipmentGroupRows] = useState<EquipmentGroupRow[]>([])
   const [bodyPositionOptions, setBodyPositionOptions] = useState<string[]>([])
   const [levelOptions, setLevelOptions] = useState<string[]>([])
+  const [limbsUsedOptions, setLimbsUsedOptions] = useState<string[]>([])
   const [difficultyMin, setDifficultyMin] = useState(0)
   const [difficultyMax, setDifficultyMax] = useState(10)
   const [searchQuery, setSearchQuery] = useState('')
+  const [batchInputText, setBatchInputText] = useState('')
+  const [batchRows, setBatchRows] = useState<BatchInputRow[]>([])
+  const [batchFilteredExerciseIds, setBatchFilteredExerciseIds] = useState<Set<string>>(new Set())
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [previewLoadError, setPreviewLoadError] = useState(false)
   const [copiedTags, setCopiedTags] = useState<TagState | null>(null)
@@ -575,6 +603,12 @@ function App() {
             .filter((value) => value.length > 0),
         )
 
+        const limbsUsed = uniqueSorted(
+          loadedTaggingCategoryRows
+            .map((row) => (row['Limbs used'] ?? '').trim())
+            .filter((value) => value.length > 0),
+        )
+
         const difficultyValues = loadedTaggingCategoryRows
           .map((row) => Number((row.Difficulty ?? '').trim()))
           .filter((value) => Number.isFinite(value))
@@ -598,6 +632,7 @@ function App() {
         setEquipmentGroupRows(loadedEquipmentRows)
         setBodyPositionOptions(positions)
         setLevelOptions(levels)
+        setLimbsUsedOptions(limbsUsed)
         setDifficultyMin(minDifficulty)
         setDifficultyMax(maxDifficulty)
         setMuscleAreaOptions(uniqueSorted(areas))
@@ -625,11 +660,14 @@ function App() {
 
   const filteredExercises = useMemo(() => {
     const query = normalizeLookupValue(searchQuery)
+    const base = exercises.filter((exercise) => batchFilteredExerciseIds.has(exercise.id))
+
     if (!query) {
-      return exercises
+      return base
     }
-    return exercises.filter((exercise) => normalizeLookupValue(exercise.name).includes(query))
-  }, [exercises, searchQuery])
+
+    return base.filter((exercise) => normalizeLookupValue(exercise.name).includes(query))
+  }, [exercises, searchQuery, batchFilteredExerciseIds])
 
   const activeExercise = useMemo(() => {
     const firstSelectedId = Array.from(selectedIds)[0]
@@ -645,6 +683,142 @@ function App() {
     }
     return normalizeTagState(tagsByExercise[activeExercise.id])
   }, [activeExercise, tagsByExercise])
+
+  const exercisesByNormalizedName = useMemo(() => {
+    const map = new Map<string, Exercise[]>()
+    exercises.forEach((exercise) => {
+      const key = normalizeLookupValue(exercise.name)
+      const existing = map.get(key) ?? []
+      existing.push(exercise)
+      map.set(key, existing)
+    })
+    return map
+  }, [exercises])
+
+  const parseBatchRows = () => {
+    const lines = batchInputText
+      .split(/\r?\n/)
+      .map((line) => line.trim())
+      .filter((line) => line.length > 0)
+
+    if (lines.length === 0) {
+      setBatchRows([])
+      setBatchFilteredExerciseIds(new Set())
+      return
+    }
+
+    const parsed: BatchInputRow[] = []
+
+    lines.forEach((line, index) => {
+      const columns = line.split('\t')
+      const first = (columns[0] ?? '').trim()
+      const second = (columns[1] ?? '').trim()
+
+      const firstNormalized = normalizeLookupValue(first)
+      const secondNormalized = normalizeLookupValue(second)
+
+      const headerRow = index === 0 && firstNormalized.includes('exercise') && secondNormalized.includes('link')
+      if (headerRow) {
+        return
+      }
+
+      if (!first && !second) {
+        return
+      }
+
+      const candidates = exercisesByNormalizedName.get(firstNormalized) ?? []
+      const matchedExercise =
+        second.length > 0
+          ? candidates.find((candidate) => normalizeLookupValue(candidate.link) === normalizeLookupValue(second)) ??
+            candidates[0] ??
+            null
+          : candidates[0] ?? null
+
+      parsed.push({
+        rowNumber: index + 1,
+        name: first,
+        link: second,
+        matchedExercise,
+        issue: !first ? 'Missing exercise name' : matchedExercise ? null : 'Exercise not found in loaded library',
+      })
+    })
+
+    setBatchRows(parsed)
+
+    const matchedIds = parsed
+      .map((row) => row.matchedExercise?.id)
+      .filter((id): id is string => Boolean(id))
+
+    setBatchFilteredExerciseIds(new Set(matchedIds))
+  }
+
+  const selectParsedExercises = () => {
+    const ids = batchRows
+      .map((row) => row.matchedExercise?.id)
+      .filter((id): id is string => Boolean(id))
+
+    if (ids.length === 0) {
+      return
+    }
+
+    setSelectedIds(new Set(ids))
+  }
+
+  const batchOutputText = useMemo(() => {
+    if (batchRows.length === 0) {
+      return ''
+    }
+
+    const header = [
+      'Exercise Name',
+      'Link',
+      'Status',
+      'Muscle area',
+      'Equipment',
+      'Body position',
+      'Difficulty',
+      'Level',
+      'Limbs used',
+      ...JOINT_ROWS.map((row) => `Planes ${row}`),
+    ]
+
+    const rows = batchRows.map((row) => {
+      const tags = row.matchedExercise ? normalizeTagState(tagsByExercise[row.matchedExercise.id]) : createEmptyTags()
+
+      const planeCells = JOINT_ROWS.map((jointRow) => (tags.planes[jointRow] ?? []).join(', '))
+
+      return [
+        row.name,
+        row.link,
+        row.issue ?? 'OK',
+        tags.muscleAreas.join(', '),
+        tags.equipment.join(', '),
+        tags.bodyPositions.join(', '),
+        tags.difficulty === null ? '' : String(tags.difficulty),
+        tags.levels.join(', '),
+        tags.limbsUsed.join(', '),
+        ...planeCells,
+      ]
+    })
+
+    return [header, ...rows].map((line) => line.join('\t')).join('\n')
+  }, [batchRows, tagsByExercise])
+
+  const copyBatchOutput = async () => {
+    if (!batchOutputText) {
+      return
+    }
+
+    try {
+      await navigator.clipboard.writeText(batchOutputText)
+    } catch (clipboardError) {
+      window.alert(
+        clipboardError instanceof Error
+          ? `Failed to copy output: ${clipboardError.message}`
+          : 'Failed to copy output to clipboard.',
+      )
+    }
+  }
 
   const mapKeyToTagMap = useMemo(() => {
     const map: Record<string, string> = {}
@@ -926,6 +1100,15 @@ function App() {
     }))
   }
 
+  const setLimbsUsedTag = (value: string) => {
+    updateActiveTags((current) => ({
+      ...current,
+      limbsUsed: current.limbsUsed.includes(value)
+        ? current.limbsUsed.filter((item) => item !== value)
+        : uniqueSorted([...current.limbsUsed, value]),
+    }))
+  }
+
   const resolveClickedMuscleTag = (muscleElement: Element): string | null => {
     const mapKey = muscleElement.getAttribute('data-map-key') ?? ''
     const mappedByKey = mapKeyToTagMap[mapKey]
@@ -984,6 +1167,13 @@ function App() {
     if (!mappedTag) {
       return
     }
+
+    const now = Date.now()
+    const last = lastMuscleClickRef.current
+    if (last && last.key === mappedTag && now - last.timestamp < 180) {
+      return
+    }
+    lastMuscleClickRef.current = { key: mappedTag, timestamp: now }
 
     toggleMuscleTag(mappedTag)
   }
@@ -1044,7 +1234,14 @@ function App() {
       return
     }
 
-    setSelectedJointRow(jointRow)
+    const now = Date.now()
+    const last = lastJointClickRef.current
+    if (last && last.key === jointRow && now - last.timestamp < 180) {
+      return
+    }
+    lastJointClickRef.current = { key: jointRow, timestamp: now }
+
+    setSelectedJointRow((current) => (current === jointRow ? null : jointRow))
   }
 
   const handleJointsMapMove = (event: MouseEvent<HTMLDivElement>) => {
@@ -1083,10 +1280,26 @@ function App() {
 
     const regions = Array.from(muscleMapRef.current.querySelectorAll('g.muscle'))
     regions.forEach((region) => {
+      region.classList.remove('selected')
+      region.classList.add('interactive-zone')
+    })
+
+    regions.forEach((region) => {
       const resolvedTag = resolveClickedMuscleTag(region)
       const selected = resolvedTag ? activeTags.muscleAreas.includes(resolvedTag) : false
-      region.classList.toggle('selected', selected)
-      region.classList.add('interactive-zone')
+      if (!selected) {
+        return
+      }
+
+      region.classList.add('selected')
+
+      let ancestor = region.parentElement
+      while (ancestor && ancestor !== muscleMapRef.current) {
+        if (ancestor.classList.contains('muscle')) {
+          ancestor.classList.add('selected')
+        }
+        ancestor = ancestor.parentElement
+      }
     })
   }, [activeTags.muscleAreas, mapKeyToTagMap, normalizedOptionMap, musclesInvolvedLookup, frontMuscleSvg, backMuscleSvg])
 
@@ -1098,10 +1311,15 @@ function App() {
     const jointNodes = Array.from(jointsMapRef.current.querySelectorAll('g.joint-zone'))
     jointNodes.forEach((node) => {
       const nodeJoint = node.getAttribute('data-joint-row')
-      const isSelected = selectedJointRow !== null && nodeJoint === selectedJointRow
-      node.classList.toggle('selected', isSelected)
+      const isFocused = selectedJointRow !== null && nodeJoint === selectedJointRow
+      const isTagged =
+        nodeJoint !== null &&
+        JOINT_ROWS.includes(nodeJoint as JointRow) &&
+        ((activeTags.planes[nodeJoint as JointRow] ?? []).length > 0)
+
+      node.classList.toggle('selected', isFocused || isTagged)
     })
-  }, [jointsSvg, selectedJointRow])
+  }, [jointsSvg, selectedJointRow, activeTags.planes])
 
   const togglePlane = (row: JointRow, plane: Plane) => {
     updateActiveTags((current) => {
@@ -1155,6 +1373,7 @@ function App() {
       bodyPositions: [...target.bodyPositions],
       difficulty: target.difficulty,
       levels: [...target.levels],
+      limbsUsed: [...target.limbsUsed],
       planes: { ...target.planes },
     }
 
@@ -1197,6 +1416,7 @@ function App() {
     next.bodyPositions = uniqueSorted([...target.bodyPositions, ...source.bodyPositions])
     next.difficulty = source.difficulty
     next.levels = uniqueSorted([...target.levels, ...source.levels])
+    next.limbsUsed = uniqueSorted([...target.limbsUsed, ...source.limbsUsed])
 
     return next
   }
@@ -1395,6 +1615,7 @@ function App() {
   const paneTitles: Record<PaneId, string> = {
     'exercise-library': 'Exercise Preview',
     'exercise-list': 'Exercise List',
+    'batch-paste': 'Batch Paste',
     'session-controls': 'Session Controls',
     'muscle-map': 'Muscle Area Map',
     'muscles-involved': 'Muscles Involved',
@@ -1402,6 +1623,7 @@ function App() {
     'body-position': 'Body Position',
     difficulty: 'Difficulty',
     level: 'Level',
+    'limbs-used': 'Limbs Used',
     joints: 'Joints',
     'planes-matrix': 'Planes Matrix',
   }
@@ -1444,26 +1666,101 @@ function App() {
               onChange={(event) => setSearchQuery(event.target.value)}
               placeholder="Search exercise name..."
             />
-            <div className="list">
-              {filteredExercises.map((exercise) => {
-                const checked = selectedIds.has(exercise.id)
-                return (
-                  <div key={exercise.id} className={`list-item ${activeExercise?.id === exercise.id ? 'active' : ''}`}>
-                    <input
-                      type="checkbox"
-                      checked={checked}
-                      onChange={() => toggleExerciseSelection(exercise.id)}
-                      aria-label={`Select ${exercise.name}`}
-                    />
-                    <button className="link-btn" onClick={() => selectOnlyExercise(exercise.id)}>
-                      {exercise.name}
-                    </button>
-                  </div>
-                )
-              })}
-            </div>
+            {filteredExercises.length === 0 ? (
+              <p className="empty-selection">Paste exercise name and link into Batch Paste to get started.</p>
+            ) : (
+              <div className="list">
+                {filteredExercises.map((exercise) => {
+                  const checked = selectedIds.has(exercise.id)
+                  return (
+                    <div key={exercise.id} className={`list-item ${activeExercise?.id === exercise.id ? 'active' : ''}`}>
+                      <input
+                        type="checkbox"
+                        checked={checked}
+                        onChange={() => toggleExerciseSelection(exercise.id)}
+                        aria-label={`Select ${exercise.name}`}
+                      />
+                      <button className="link-btn" onClick={() => selectOnlyExercise(exercise.id)}>
+                        {exercise.name}
+                      </button>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
           </>
         )
+
+      case 'batch-paste': {
+        const matchedCount = batchRows.filter((row) => row.issue === null).length
+
+        return (
+          <div className="batch-pane">
+            <p className="helper-text">Paste Excel rows with two columns: Exercise Name and Link (tab-delimited).</p>
+
+            <textarea
+              className="batch-input"
+              value={batchInputText}
+              onChange={(event) => setBatchInputText(event.target.value)}
+              placeholder={['Exercise Name\tLink', 'Split Squat\thttps://.../video.mp4'].join('\n')}
+            />
+
+            <div className="toolbar">
+              <button type="button" onClick={parseBatchRows}>
+                Parse Rows
+              </button>
+              <button type="button" onClick={selectParsedExercises} disabled={matchedCount === 0}>
+                Select Matched Exercises
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setBatchRows([])
+                  setBatchInputText('')
+                  setBatchFilteredExerciseIds(new Set())
+                }}
+                disabled={batchRows.length === 0 && batchFilteredExerciseIds.size === 0}
+              >
+                Clear Batch Filter
+              </button>
+              <span className="copied-source">
+                Pasted rows: {batchRows.length} • Matched exercises: {matchedCount} • Unmatched: {Math.max(batchRows.length - matchedCount, 0)}
+              </span>
+            </div>
+
+            {batchRows.length > 0 && (
+              <div className="batch-results-table-wrap">
+                <table className="batch-results-table">
+                  <thead>
+                    <tr>
+                      <th>Row</th>
+                      <th>Exercise</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {batchRows.map((row) => (
+                      <tr key={`batch-row-${row.rowNumber}-${row.name}`}>
+                        <td>{row.rowNumber}</td>
+                        <td>{row.name}</td>
+                        <td>{row.issue ?? 'OK'}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+            <div className="batch-output-header">
+              <h4>Output for Excel (tab-delimited)</h4>
+              <button type="button" onClick={copyBatchOutput} disabled={!batchOutputText}>
+                Copy Output
+              </button>
+            </div>
+            <textarea className="batch-output" readOnly value={batchOutputText} />
+          </div>
+        )
+      }
 
       case 'session-controls':
         return !activeExercise ? (
@@ -1803,6 +2100,34 @@ function App() {
                       onClick={() => setLevelTag(levelLabel)}
                     >
                       {levelLabel}
+                    </button>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+        )
+
+      case 'limbs-used':
+        return !activeExercise ? (
+          <p>Select an exercise to start tagging.</p>
+        ) : (
+          <div className="simple-tag-pane">
+            <p className="helper-text">Choose one or more limbs used tags.</p>
+            {limbsUsedOptions.length === 0 ? (
+              <p className="empty-selection">No Limbs used values found in TaggingCategories.csv column W.</p>
+            ) : (
+              <div className="muscle-tags-wrap">
+                {limbsUsedOptions.map((limbLabel) => {
+                  const selected = activeTags.limbsUsed.includes(limbLabel)
+                  return (
+                    <button
+                      key={`limbs-${limbLabel}`}
+                      type="button"
+                      className={`muscle-tag-btn ${selected ? 'active' : ''}`}
+                      onClick={() => setLimbsUsedTag(limbLabel)}
+                    >
+                      {limbLabel}
                     </button>
                   )
                 })}

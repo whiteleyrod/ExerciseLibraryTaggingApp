@@ -25,6 +25,7 @@ This section reflects actual delivery status to date.
 	- Body position (multi-select).
 	- Difficulty slider.
 	- Level (multi-select, from `TaggingCategories.csv` column `Level`).
+	- Limbs used (multi-select, from `TaggingCategories.csv` column `Limbs used`).
 - Copy/paste semantics delivered in-app with merge/replace behavior and include toggles.
 - Local storage persistence implemented for per-exercise tag state.
 
@@ -40,7 +41,7 @@ This section reflects actual delivery status to date.
 - Reviewer/admin workflows beyond local MVP operations.
 
 ### 0.4 Active Source-of-Truth Files
-- `TaggingCategories.csv` (body position, difficulty, level, etc.).
+- `TaggingCategories.csv` (body position, difficulty, level, limbs used, etc.).
 - `Muscle, joint, area.xlsx` (muscle/joint taxonomy and grouped pane data).
 - `EquipmentTags.xlsx` (equipment category data).
 

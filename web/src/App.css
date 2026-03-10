@@ -446,10 +446,13 @@
 .joints-map-svg .joint-zone.selected rect,
 .joints-map-svg .joint-zone.selected ellipse,
 .joints-map-svg .joint-zone.selected circle,
-.joints-map-svg .joint-zone.selected polygon {
-  stroke: #166534 !important;
+.joints-map-svg .joint-zone.selected polygon,
+.joints-map-svg .joint-zone.selected polyline,
+.joints-map-svg .joint-zone.selected line {
+  stroke: #065f46 !important;
+  fill: #86efac !important;
   stroke-width: 2.5 !important;
-  fill-opacity: 0.9 !important;
+  fill-opacity: 1 !important;
 }
 
 .joint-options-panel {
@@ -701,6 +704,76 @@
   cursor: pointer;
 }
 
+.batch-pane {
+  border: 1px solid #dbe3ef;
+  border-radius: 8px;
+  background: #fff;
+  padding: 0.6rem;
+}
+
+.batch-input,
+.batch-output {
+  width: 100%;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  padding: 0.45rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+  font-size: 0.78rem;
+  resize: vertical;
+}
+
+.batch-input {
+  min-height: 110px;
+}
+
+.batch-output {
+  min-height: 170px;
+}
+
+.batch-results-table-wrap {
+  margin: 0.55rem 0;
+  max-height: 180px;
+  overflow: auto;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+}
+
+.batch-results-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.batch-results-table th,
+.batch-results-table td {
+  border-bottom: 1px solid #eef2f7;
+  padding: 0.32rem 0.45rem;
+  text-align: left;
+  font-size: 0.78rem;
+}
+
+.batch-output-header {
+  margin-top: 0.35rem;
+  margin-bottom: 0.35rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.batch-output-header h4 {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #334155;
+}
+
+.batch-output-header button {
+  border: 1px solid #cbd5e1;
+  background: #f8fafc;
+  border-radius: 6px;
+  padding: 0.3rem 0.55rem;
+  cursor: pointer;
+}
+
 .workbook-joints-panel {
   margin-top: 0.8rem;
   border-top: 1px solid #e2e8f0;
@@ -762,10 +835,13 @@
 .muscle-map-svg .muscle.selected rect,
 .muscle-map-svg .muscle.selected ellipse,
 .muscle-map-svg .muscle.selected circle,
-.muscle-map-svg .muscle.selected polygon {
-  stroke: #166534 !important;
+.muscle-map-svg .muscle.selected polygon,
+.muscle-map-svg .muscle.selected polyline,
+.muscle-map-svg .muscle.selected line {
+  stroke: #065f46 !important;
+  fill: #86efac !important;
   stroke-width: 3 !important;
-  fill-opacity: 0.72 !important;
+  fill-opacity: 1 !important;
 }
 
 .muscle-tooltip {

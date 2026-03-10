@@ -8,7 +8,7 @@ Web application for physiotherapist exercise tagging with high-throughput workfl
 - React + TypeScript SPA in `web/`.
 - Exercise loading and preview from `web/public/ExerciseName_Link.csv`.
 - Dockable pane system with draggable pane reordering, horizontal/vertical resize, reset, and presets.
-- 4-row layout (`2 / 3 / 4 / 3`) with vertical page scrolling to access lower panes.
+- 4-row layout (`2 / 3 / 4 / 4`) with vertical page scrolling to access lower panes.
 - Tagging panes for:
   - Muscle area map + manual area selection
   - Muscles involved (grouped from workbook)
@@ -17,6 +17,7 @@ Web application for physiotherapist exercise tagging with high-throughput workfl
   - Body position (multi-select)
   - Difficulty (slider)
   - Level (multi-select, sourced from `TaggingCategories.csv` column `Level`)
+  - Limbs Used (multi-select, sourced from `TaggingCategories.csv` column `Limbs used`)
 - Copy/paste workflow with merge/replace semantics and per-field includes.
 - Local persistence of tags in browser `localStorage`.
 
@@ -28,7 +29,11 @@ Web application for physiotherapist exercise tagging with high-throughput workfl
 ## Data Files and Their Usage
 
 - `TaggingCategories.csv`
-  - Source-of-truth taxonomy for body position, difficulty, and level.
+  - Source-of-truth taxonomy for body position, difficulty, level, and limbs used.
+  - Mapped fields:
+    - `Body position` -> Body Position pane
+    - `Level` -> Level pane
+    - `Limbs used` -> Limbs Used pane
   - Synced runtime copy: `web/public/TaggingCategories.csv`.
 - `Muscle, joint, area.xlsx`
   - Source workbook for muscle area + grouped muscles/joints panes.
